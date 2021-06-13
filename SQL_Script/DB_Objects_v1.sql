@@ -104,7 +104,6 @@ create procedure pe_PurgeDataMesa (
 as
 begin
 	set nocount on;
-	--delete from pe_Mesas where eleccion = @eleccion
 	delete from pe_Actas where eleccion = @eleccion and mesa_numero = @mesa_numero
 	delete from pe_Votos where eleccion = @eleccion and mesa_numero = @mesa_numero
 end
