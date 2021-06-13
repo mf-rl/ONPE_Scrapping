@@ -1,75 +1,144 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
+using OpenQA.Selenium;
 using PE_Scrapping.Entidades;
+using System.Text.Json;
+using System.Threading;
 
 namespace PE_Scrapping.Funciones
 {
     public class Funciones
     {
-        static void ObtenerDataUbigeo()
+        IWebDriver _driver;
+        EndPointSet _endPointSet;
+        AppConfig _config;
+        public Funciones()
         {
-            //driver = new ChromeDriver("runtimes");
-            //driver.Manage().Window.Minimize();
 
-            //List<Ubigeo> ambito = GetItems(1, "cod_ambito", string.Concat(uri_base, "T"));
-            //SaveUbigeo(ambito);
-            //Console.WriteLine(string.Format("Guardado: Ambito(s) -> {0}", ambito.Count.ToString()));
-            //ambito.ForEach(a =>
-            //{
-            //    Console.WriteLine(string.Format("Procesando {0}", a.ubigeo_dc));
-            //    List<Ubigeo> departamentos = GetItems(2, "cod_depa", string.Concat(uri_base, a.ubigeo_id));
-            //    SaveUbigeo(departamentos);
-            //    Console.WriteLine(string.Format("Guardado: Departamento(s) -> {0}", departamentos.Count.ToString()));
-            //    departamentos.ForEach(d =>
-            //    {
-            //        Console.WriteLine(string.Format("Procesando {0} - {1}", a.ubigeo_dc, d.ubigeo_dc));
-            //        List<Ubigeo> provincia = GetItems(3, "cod_prov", string.Concat(uri_base, a.ubigeo_id, "/", d.ubigeo_id));
-            //        SaveUbigeo(provincia);
-            //        Console.WriteLine(string.Format("Guardado: Provincia(s) -> {0}", provincia.Count.ToString()));
-            //        provincia.ForEach(p =>
-            //        {
-            //            Console.WriteLine(string.Format("Procesando {0} - {1} - {2}", a.ubigeo_dc, d.ubigeo_dc, p.ubigeo_dc));
-            //            List<Ubigeo> distrito = GetItems(4, "cod_dist", string.Concat(uri_base, a.ubigeo_id, "/", d.ubigeo_id, "/", p.ubigeo_id));
-            //            SaveUbigeo(distrito);
-            //            Console.WriteLine(string.Format("Guardado: Distrito(s) -> {0}", distrito.Count.ToString()));
-            //            distrito.ForEach(dd =>
-            //            {
-            //                Console.WriteLine(string.Format("Procesando {0} - {1} - {2} - {3}", a.ubigeo_dc, d.ubigeo_dc, p.ubigeo_dc, dd.ubigeo_dc));
-            //                List<Ubigeo> local = GetItems(5, "cod_local", string.Concat(uri_base, a.ubigeo_id, "/", d.ubigeo_id, "/", p.ubigeo_id, "/", dd.ubigeo_id));
-            //                SaveUbigeo(local);
-            //                //Console.WriteLine(string.Format("Guardado: Local(s) -> {0}", local.Count.ToString()));
-            //                //local.ForEach(l =>
-            //                //{
-            //                //    Console.WriteLine(string.Format("Procesando {0} - {1} - {2} - {3} - {4}", a.ubigeo_dc, d.ubigeo_dc, p.ubigeo_dc, dd.ubigeo_dc, l.ubigeo_dc));
-            //                //    List<Mesa> tables = GetTables(string.Concat(uri_base, a.ubigeo_id, "/", d.ubigeo_id, "/", p.ubigeo_id, "/", dd.ubigeo_id, "/", l.ubigeo_id));
-            //                //    //ProcessTables(tables, string.Concat(uri_base, a.ubigeo_id, "/", d.ubigeo_id, "/", p.ubigeo_id, "/", dd.ubigeo_id, "/", l.ubigeo_id, "/"));
-            //                //    tables.ForEach(t =>
-            //                //    {
-            //                //        Console.WriteLine(string.Format("Procesando {0} - {1} - {2} - {3} - {4} / Mesa {5}", a.ubigeo_dc, d.ubigeo_dc, p.ubigeo_dc, dd.ubigeo_dc, l.ubigeo_dc, t.Numero));
-            //                //        Mesa data = GetTableData(
-            //                //            string.Concat(uri_base, a.ubigeo_id, "/", d.ubigeo_id, "/", p.ubigeo_id, "/", dd.ubigeo_id, "/", l.ubigeo_id, "/", t.Numero),
-            //                //            t,
-            //                //            a.ubigeo_id,
-            //                //            d.ubigeo_id,
-            //                //            p.ubigeo_id,
-            //                //            dd.ubigeo_id,
-            //                //            l.ubigeo_id
-            //                //        );
-            //                //        SaveMesa(data);
-            //                //        Console.WriteLine(string.Format("Mesa {0} guardada.", data.Numero));
-            //                //    });
-            //                //});
-            //            });
-            //        });
-            //    });
-            //});
+        }
+        public Funciones(IWebDriver driver, AppConfig config, string opcion)
+        {
+            _driver = driver;
+            _config = config;
+            _endPointSet = opcion.Equals(Constantes.ProcesarPrimeraV) ? _config.Api.First : _config.Api.Second;
+        }
+        public void GetData()
+        {
+            var tr = new Transacciones(_config.ConnectionString);
+            if (!Directory.Exists(Path.Combine(_config.SavePath, _endPointSet.Title)))
+            {
+                Directory.CreateDirectory(Path.Combine(_config.SavePath, _endPointSet.Title));
+            }
+            Console.WriteLine("Limpiando tablas...");
+            tr.LimpiarData();
 
-            //driver.Close();
-            //Console.WriteLine("Finalizado. :)");
-            //Console.ReadKey();
+            Console.WriteLine("Obteniendo data de Ubigeo - {0}", _endPointSet.Title);
+            var json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.Ubigeo, _endPointSet.BodyTag);
+
+            Ubigeo ubigeos =
+                JsonSerializer.Deserialize<Ubigeo>(json);
+            tr.GuardarUbigeos(ubigeos);
+
+            ProcessAmbit(ubigeos.ubigeos.nacional);
+            ProcessAmbit(ubigeos.ubigeos.extranjero);
+        }
+        public string SendApiRequest(string url, string tag)
+        {
+            _driver.Navigate().GoToUrl(url);
+            Thread.Sleep(_config.MilisecondsWait);
+            string json = _driver.FindElement(By.TagName(tag)).Text;
+            return json;
+        }
+        public void ProcessAmbit(object ambito)
+        {
+            List<Department> dep = new();
+            List<Province> pro = new();
+            List<District> dis = new();
+            string ambito_desc = string.Empty;
+            string json = string.Empty;
+            var fn = new Transacciones(_config.ConnectionString);
+            switch (ambito.GetType().Name)
+            {
+                case Constantes.AmbitoNacional:
+                    Nacional nacional = (Nacional)ambito;
+                    dep = nacional.departments;
+                    pro = nacional.provinces;
+                    dis = nacional.districts;
+                    ambito_desc = Constantes.AmbitoNacional;
+                    break;
+                case Constantes.AmbitoExtranjero:
+                    Extranjero extranjero = (Extranjero)ambito;
+                    dep = extranjero.continents;
+                    pro = extranjero.countries;
+                    dis = extranjero.states;
+                    ambito_desc = Constantes.AmbitoExtranjero;
+                    break;
+            }
+
+            int index_dep = 0;
+            Console.WriteLine("Procesando ámbito: {0}", ambito_desc);
+            dep.ForEach(d =>
+            {
+                index_dep++;
+                Console.WriteLine("{0}.- {1}", index_dep.ToString(), d.DESC_DEP);
+                int index_pro = 0;
+                List<Province> level2 = pro.Where(f => f.CDGO_PADRE.Equals(d.CDGO_DEP)).ToList();
+                level2.ForEach(dd =>
+                {
+                    index_pro++;
+                    Console.WriteLine("{0}.{1}.- {2}", index_dep.ToString(), index_pro.ToString(), dd.DESC_PROV);
+                    int index_dis = 0;
+                    List<District> level3 = dis.Where(f => f.CDGO_PADRE.Equals(dd.CDGO_PROV)).ToList();
+                    level3.ForEach(ddd =>
+                    {
+                        index_dis++;
+                        Console.WriteLine("{0}.{1}.{2}.- {3}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), ddd.DESC_DIST);
+                        int index_loc = 0;
+                        json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.Locale.Replace("{ubigeo_code}", ddd.CDGO_DIST), _endPointSet.BodyTag);
+                        Local locales = JsonSerializer.Deserialize<Local>(json);
+                        fn.GuardarLocales(locales);
+                        locales.locales.ForEach(l =>
+                        {
+                            index_loc++;
+                            Console.WriteLine("{0}.{1}.{2}.{3}.- Local: {4}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), index_loc.ToString(), l.TNOMB_LOCAL);
+                            int index_mes = 0;
+                            json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.Table
+                                .Replace("{ubigeo_code}", ddd.CDGO_DIST)
+                                .Replace("{locale_code}", l.CCODI_LOCAL)
+                                , _endPointSet.BodyTag);
+                            Mesa mesas = JsonSerializer.Deserialize<Mesa>(json);
+                            fn.GuardarMesas(mesas, l.CCODI_LOCAL, l.CCODI_UBIGEO);
+                            mesas.mesasVotacion.ForEach(m =>
+                            {
+                                index_mes++;
+                                Console.WriteLine("{0}.{1}.{2}.{3}.{4}.- Mesa N° {5}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), index_loc.ToString(), index_mes.ToString(), m.NUMMESA);
+                                if (m.PROCESADO == 1)
+                                {
+                                    json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.TableDetail
+                                        .Replace("{table_code}", m.NUMMESA)
+                                        , _endPointSet.BodyTag);
+                                    MesaDetalle mesaDetalle = JsonSerializer.Deserialize<MesaDetalle>(json);
+                                    fn.GuardarMesaDetalle(mesaDetalle, m.NUMMESA);
+                                    if (_config.DownloadFiles)
+                                        DescargarActa(mesaDetalle.procesos.generalPre.imageActa, 
+                                            string.Concat(d.DESC_DEP, "_", dd.DESC_PROV, "_", ddd.DESC_DIST, "_", l.CCODI_LOCAL, "_", m.NUMMESA, ".pdf"));
+                                }
+                                else Console.WriteLine("---->Mesa no procesada.");
+                            });
+                        });
+                    });
+                });
+            });
+        }
+        public void DescargarActa(string url_acta, string save_file)
+        {
+            using (var client = new WebClient())
+            {
+                client.DownloadFile(url_acta, Path.Combine(_config.SavePath, _endPointSet.Title, save_file));
+            }
         }
     }
 }
