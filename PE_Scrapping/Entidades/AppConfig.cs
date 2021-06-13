@@ -8,6 +8,8 @@
         public bool DownloadFiles { get; set; }
         public int MilisecondsWait { get; set; }
         public string ChromeDriverPath { get; set; }
+        public bool SaveJson { get; set; }
+        public bool SaveData { get; set; }
     }
     public class Api
     {

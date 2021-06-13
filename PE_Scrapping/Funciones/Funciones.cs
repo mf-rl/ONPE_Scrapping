@@ -23,7 +23,7 @@ namespace PE_Scrapping.Funciones
         List<Department> dep = new();
         List<Province> pro = new();
         List<District> dis = new();
-        Transacciones _fn;
+        Transacciones _tran;
         Ubigeo _ubigeos;
         public Funciones()
         {
@@ -33,7 +33,7 @@ namespace PE_Scrapping.Funciones
         {
             _driver = driver;
             _config = config;
-            _fn = new Transacciones(_config.ConnectionString);
+            if (_config.SaveData) _tran = new Transacciones(_config.ConnectionString);
             _endPointSet = opcion.Equals(Constantes.ProcesarPrimeraV) ? _config.Api.First : _config.Api.Second;
             _opcion = opcion;
             _seleccion = seleccion;
@@ -43,35 +43,41 @@ namespace PE_Scrapping.Funciones
                 NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString
             };
         }
+        private void GuardarJSON(string json, string nombre)
+        {            
+            File.WriteAllText(Path.Combine(_config.SavePath, _endPointSet.Title, "JSON", string.Concat(nombre, ".json")), json);
+        }
         public void GetData()
         {
-            var tr = new Transacciones(_config.ConnectionString);
-            if (!Directory.Exists(Path.Combine(_config.SavePath, _endPointSet.Title)))
-            {
+            if (_config.DownloadFiles && !Directory.Exists(Path.Combine(_config.SavePath, _endPointSet.Title)))
                 Directory.CreateDirectory(Path.Combine(_config.SavePath, _endPointSet.Title));
-            }
+
+            if (_config.SaveJson && !Directory.Exists(Path.Combine(_config.SavePath, _endPointSet.Title, "JSON")))
+                Directory.CreateDirectory(Path.Combine(_config.SavePath, _endPointSet.Title, "JSON"));
+
             Console.WriteLine("Limpiando tablas de ubigeo...");
-            tr.LimpiarDataUbigeo(_opcion);
+            if (_config.SaveData) _tran.LimpiarDataUbigeo(_opcion);
 
             Console.WriteLine("Obteniendo data de Ubigeo - {0}", _endPointSet.Title);
             var json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.Ubigeo, _endPointSet.BodyTag);
+            if (_config.SaveJson) GuardarJSON(json, "ubigeo");
 
             _ubigeos = JsonSerializer.Deserialize<Ubigeo>(json, _settings);
-            tr.GuardarUbigeos(_ubigeos, _opcion);
+            if (_config.SaveData) _tran.GuardarUbigeos(_ubigeos, _opcion);
 
             if (_seleccion.Equals(Constantes.TodasLasMesas))
             {
                 Console.WriteLine("Limpiando data previa...");
-                tr.LimpiarData(_opcion);
+                if (_config.SaveData) _tran.LimpiarData(_opcion);
                 ProcessAmbit(_ubigeos.ubigeos.nacional);
                 ProcessAmbit(_ubigeos.ubigeos.extranjero);
             }
             else
             {
                 Console.WriteLine("Limpiando data previa de la mesa {0}...", _mesa_seleccion);
-                tr.LimpiarDataMesa(_opcion, _mesa_seleccion);
+                if (_config.SaveData) _tran.LimpiarDataMesa(_opcion, _mesa_seleccion);
                 Console.WriteLine("Obteniendo resultados en Mesa N° {0}", _mesa_seleccion);
-                ObtenerDetalleMesa(_fn, _mesa_seleccion);
+                ObtenerDetalleMesa(_mesa_seleccion);
             }
         }
         public string SendApiRequest(string url, string tag)
@@ -157,14 +163,14 @@ namespace PE_Scrapping.Funciones
                         Console.WriteLine("{0}.{1}.{2}.- {3}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), ddd.DESC_DIST);
                         int index_loc = 0;
                         Local locales = ObtenerLocales(ddd.CDGO_DIST);
-                        _fn.GuardarLocales(locales, _opcion);
+                        if (_config.SaveData) _tran.GuardarLocales(locales, _opcion);
                         locales.locales.ForEach(l =>
                         {
                             index_loc++;
                             Console.WriteLine("{0}.{1}.{2}.{3}.- Local: {4}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), index_loc.ToString(), l.TNOMB_LOCAL);
                             int index_mes = 0;
                             Mesa mesas = ObtenerMesas(ddd.CDGO_DIST, l.CCODI_LOCAL);
-                            _fn.GuardarMesas(mesas, l.CCODI_LOCAL, l.CCODI_UBIGEO, _opcion);
+                            if (_config.SaveData) _tran.GuardarMesas(mesas, l.CCODI_LOCAL, l.CCODI_UBIGEO, _opcion);
                             mesas.mesasVotacion.ForEach(m =>
                             {
                                 index_mes++;
@@ -173,7 +179,7 @@ namespace PE_Scrapping.Funciones
                                     Console.WriteLine("---->Mesa no procesada.");
                                 else
                                 {
-                                    ObtenerDetalleMesa(_fn, m.NUMMESA, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST, l.CCODI_LOCAL);
+                                    ObtenerDetalleMesa(m.NUMMESA, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST, l.CCODI_LOCAL);
                                 }
                             });
                         });
@@ -187,23 +193,25 @@ namespace PE_Scrapping.Funciones
                                     .Replace("{ubigeo_code}", codigo_distrito)
                                     .Replace("{locale_code}", codigo_local)
                                     , _endPointSet.BodyTag);
+            if (_config.SaveJson) GuardarJSON(json, string.Concat("mesas_local-", codigo_local, "_distrito-", codigo_distrito));
             Mesa mesas = JsonSerializer.Deserialize<Mesa>(json, _settings);
             return mesas;
         }
         private Local ObtenerLocales(string codigo_distrito)
         {
             var json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.Locale.Replace("{ubigeo_code}", codigo_distrito), _endPointSet.BodyTag);
+            if (_config.SaveJson) GuardarJSON(json, string.Concat("locales_distrito-", codigo_distrito));
             Local locales = JsonSerializer.Deserialize<Local>(json, _settings);
             return locales;
         }
-        private void ObtenerDetalleMesa(Transacciones funciones, string numero_mesa,
+        private void ObtenerDetalleMesa(string numero_mesa,
             string departamento = null, string provincia = null, string distrito = null, string local = null)
         {
             var json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.TableDetail
                                             .Replace("{table_code}", numero_mesa)
                                             , _endPointSet.BodyTag);
             MesaDetalle mesaDetalle = JsonSerializer.Deserialize<MesaDetalle>(json, _settings);
-            funciones.GuardarMesaDetalle(mesaDetalle, numero_mesa, _opcion);
+            if (_config.SaveData) _tran.GuardarMesaDetalle(mesaDetalle, numero_mesa, _opcion);
 
             if (string.IsNullOrEmpty(distrito))
             {
@@ -250,6 +258,7 @@ namespace PE_Scrapping.Funciones
                 }                
             }
 
+            if (_config.SaveJson) GuardarJSON(json, string.Concat("detalle_mesa_", departamento, "_", provincia, "_", distrito, "_", local, "_", numero_mesa));
             if (_config.DownloadFiles)
             {
                 if (mesaDetalle.procesos.generalPre != null)
