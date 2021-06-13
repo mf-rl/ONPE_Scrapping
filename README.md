@@ -3,7 +3,7 @@ Pequeña aplicación para obtener datos de las elecciones presidenciales de Per�
 
 Esta aplicación se encuentra en versión de pruebas. Si alguien quiere contribuir y mejorar, es bienvenido.
 
-Utiliza ChromeDriver versión 91. Verificar que chromedriver.exe se encuentre en la misma carpeta de la aplicación.
+Utiliza ChromeDriver versión 91. Verificar que chromedriver.exe se encuentre en la carpeta "runtimes", en la raiz de la aplicación.
 En el repositorio se encuentra en la carpeta "chromedriver_win32".
 
 Varias versiones de ChromeDriver, por si hay errores con la versión de Chrome:<br />
