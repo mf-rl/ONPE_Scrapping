@@ -7,6 +7,7 @@
         public string SavePath { get; set; }
         public bool DownloadFiles { get; set; }
         public int MilisecondsWait { get; set; }
+        public string ChromeDriverPath { get; set; }
     }
     public class Api
     {

@@ -16,7 +16,7 @@ namespace PE_Scrapping
 
             var cfg = InitOptions<AppConfig>();
 
-            driver = new ChromeDriver("runtimes");
+            driver = new ChromeDriver(cfg.ChromeDriverPath);
             driver.Manage().Window.Minimize();
 
             string opt = string.Empty;
