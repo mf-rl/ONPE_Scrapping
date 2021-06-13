@@ -1,7 +1,7 @@
 # PE_Scrapping
 Pequeña aplicación para obtener datos de las elecciones presidenciales de Perú, que es información pública y se encuentra publicada en la misma página de la ONPE.
 
-Esta aplicación se encuentra en versión de pruebas. Si alguien quiere contribuir y mejorar, es bienvenido.
+Esta aplicación se encuentra en versión de pruebas. Si alguien quiere contribuir y mejorar, es bienvenido. La opción 1 aún presenta algunos errores con el esquema de la data.
 
 Utiliza ChromeDriver versión 91. Verificar que chromedriver.exe se encuentre en la carpeta "runtimes", en la raiz de la aplicación. 
 En el repositorio se encuentra en la carpeta "chromedriver_win32", pero también se puede configurar la ruta del chromedriver.exe en el archivo appSettings.json, bajo el parámetro "ChromeDriverPath".
