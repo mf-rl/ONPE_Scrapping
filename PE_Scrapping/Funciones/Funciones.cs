@@ -47,9 +47,19 @@ namespace PE_Scrapping.Funciones
         }
         public string SendApiRequest(string url, string tag)
         {
-            _driver.Navigate().GoToUrl(url);
-            Thread.Sleep(_config.MilisecondsWait);
-            string json = _driver.FindElement(By.TagName(tag)).Text;
+            bool success = false;
+            string json = string.Empty;            
+            while (!success)
+            {
+                try
+                {
+                    _driver.Navigate().GoToUrl(url);
+                    Thread.Sleep(_config.MilisecondsWait);
+                    json = _driver.FindElement(By.TagName(tag)).Text;
+                    success = true;
+                }
+                catch { }
+            }            
             return json;
         }
         public void ProcessAmbit(object ambito)
