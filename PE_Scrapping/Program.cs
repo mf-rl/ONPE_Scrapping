@@ -4,6 +4,7 @@ using OpenQA.Selenium.Chrome;
 using PE_Scrapping.Entidades;
 using PE_Scrapping.Funciones;
 using System;
+using System.Threading;
 
 namespace PE_Scrapping
 {
@@ -18,11 +19,11 @@ namespace PE_Scrapping
 
             driver = new ChromeDriver(cfg.ChromeDriverPath);
             driver.Manage().Window.Minimize();
-
+            Thread.Sleep(5000);
             string opt = string.Empty;
             while (!opt.Equals(Constantes.ProcesarPrimeraV) && !opt.Equals(Constantes.ProcesarSegundaV))
             {
-                Console.WriteLine("Opción?");
+                Console.WriteLine("Digitar opción y presionar <Enter>:");
                 Console.WriteLine("1 - Cargar data 1ra V");
                 Console.WriteLine("2 - Cargar data 2da V");
                 opt = Console.ReadLine();

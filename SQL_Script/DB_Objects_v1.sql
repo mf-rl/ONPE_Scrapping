@@ -4,7 +4,10 @@ GO
 create table pe_Ubigeos (
 	ubigeo_codigo varchar(6),
 	ubigeo_descripcion varchar(100),
-	ubigeo_padre varchar(6)
+	ubigeo_padre varchar(6),
+	eleccion char(1),
+	nivel int,
+	ambito char(1)
 )
 GO
 
@@ -15,7 +18,8 @@ create table pe_Locales (
 	local_codigo varchar(20),
 	local_ubigeo varchar(6),
 	local_nombre varchar(200),
-	local_direccion varchar(200)
+	local_direccion varchar(200),
+	eleccion char(1)
 )
 GO
 
@@ -27,7 +31,8 @@ create table pe_Mesas (
 	local_codigo varchar(20),
 	mesa_numero varchar(20),
 	mesa_procesado int,
-	mesa_imagen varchar(max)
+	mesa_imagen varchar(max),
+	eleccion char(1)
 )
 GO
 
@@ -39,7 +44,9 @@ create table pe_Actas (
 	acta_numero varchar(20),
 	acta_imagen varchar(max),
 	habiles_numero int,
-	votantes_numero int
+	votantes_numero int,
+	eleccion char(1),
+	tipo_proceso char(3)
 )
 GO
 
@@ -51,21 +58,39 @@ create table pe_Votos (
 	acta_numero varchar(20),
 	auto_nombre varchar(max),
 	lista_numero int,
-	votos_total int
+	votos_total int,
+	eleccion char(1),
+	tipo_proceso char(3)
 )
 GO
+
+--IF OBJECT_ID('dbo.pe_Proceso', 'U') IS NOT NULL
+--	drop table pe_Proceso
+--GO
+--create table pe_Proceso (
+--	proceso_vuelta char(1),
+--	proceso_tipo char(3),
+--	asistio_no_voto varchar(max),
+--	lista_numero int,
+--	votos_total int
+--)
+--GO
+
+
 
 IF (OBJECT_ID('dbo.pe_PurgeData', 'P') IS NOT NULL)
 	drop procedure pe_PurgeData
 GO
-create procedure pe_PurgeData
+create procedure pe_PurgeData (
+	@eleccion char(1)
+)
 as
 begin
 	set nocount on;
-	truncate table pe_Ubigeos
-	truncate table pe_Locales
-	truncate table pe_Mesas
-	truncate table pe_Actas
-	truncate table pe_Votos
+	delete from pe_Ubigeos where eleccion = @eleccion
+	delete from pe_Locales where eleccion = @eleccion
+	delete from pe_Mesas where eleccion = @eleccion
+	delete from pe_Actas where eleccion = @eleccion
+	delete from pe_Votos where eleccion = @eleccion
 end
 GO
