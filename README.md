@@ -9,7 +9,7 @@ En el repositorio se encuentra en la carpeta "chromedriver_win32".
 Varias versiones de ChromeDriver, por si hay errores con la versión de Chrome:<br />
 http://chromedriver.storage.googleapis.com/index.html
 
-APIs utilizadas
+APIs utilizadas<br />
 1ra Vuelta<br />
 Request URL: https://resultadoshistorico.onpe.gob.pe/v1/EG2021/ecp/ubigeos/T<br />
 Request URL: https://resultadoshistorico.onpe.gob.pe/v1/EG2021/mesas/locales/010202<br />
