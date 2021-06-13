@@ -64,20 +64,6 @@ create table pe_Votos (
 )
 GO
 
---IF OBJECT_ID('dbo.pe_Proceso', 'U') IS NOT NULL
---	drop table pe_Proceso
---GO
---create table pe_Proceso (
---	proceso_vuelta char(1),
---	proceso_tipo char(3),
---	asistio_no_voto varchar(max),
---	lista_numero int,
---	votos_total int
---)
---GO
-
-
-
 IF (OBJECT_ID('dbo.pe_PurgeData', 'P') IS NOT NULL)
 	drop procedure pe_PurgeData
 GO
@@ -87,10 +73,39 @@ create procedure pe_PurgeData (
 as
 begin
 	set nocount on;
-	delete from pe_Ubigeos where eleccion = @eleccion
 	delete from pe_Locales where eleccion = @eleccion
 	delete from pe_Mesas where eleccion = @eleccion
 	delete from pe_Actas where eleccion = @eleccion
 	delete from pe_Votos where eleccion = @eleccion
+end
+GO
+
+
+IF (OBJECT_ID('dbo.pe_PurgeDataUbigeo', 'P') IS NOT NULL)
+	drop procedure pe_PurgeDataUbigeo
+GO
+create procedure pe_PurgeDataUbigeo (
+	@eleccion char(1)
+)
+as
+begin
+	set nocount on;
+	delete from pe_Ubigeos where eleccion = @eleccion
+end
+GO
+
+IF (OBJECT_ID('dbo.pe_PurgeDataMesa', 'P') IS NOT NULL)
+	drop procedure pe_PurgeDataMesa
+GO
+create procedure pe_PurgeDataMesa (
+	@eleccion char(1),
+	@mesa_numero varchar(20)
+)
+as
+begin
+	set nocount on;
+	--delete from pe_Mesas where eleccion = @eleccion
+	delete from pe_Actas where eleccion = @eleccion and mesa_numero = @mesa_numero
+	delete from pe_Votos where eleccion = @eleccion and mesa_numero = @mesa_numero
 end
 GO

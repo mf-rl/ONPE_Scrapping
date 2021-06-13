@@ -318,5 +318,32 @@ namespace PE_Scrapping.Funciones
                 command.ExecuteNonQuery();
             }
         }
+        public void LimpiarDataUbigeo(string opcion)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            using (var command = new SqlCommand("pe_PurgeDataUbigeo", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            })
+            {
+                command.Parameters.Add(new SqlParameter("@eleccion", opcion));
+                conn.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+        public void LimpiarDataMesa(string opcion, string mesa_numero)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            using (var command = new SqlCommand("pe_PurgeDataMesa", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            })
+            {
+                command.Parameters.Add(new SqlParameter("@eleccion", opcion));
+                command.Parameters.Add(new SqlParameter("@mesa_numero", mesa_numero));
+                conn.Open();
+                command.ExecuteNonQuery();
+            }
+        }
     }
 }

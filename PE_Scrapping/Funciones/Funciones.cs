@@ -50,8 +50,8 @@ namespace PE_Scrapping.Funciones
             {
                 Directory.CreateDirectory(Path.Combine(_config.SavePath, _endPointSet.Title));
             }
-            Console.WriteLine("Limpiando tablas...");
-            tr.LimpiarData(_opcion);
+            Console.WriteLine("Limpiando tablas de ubigeo...");
+            tr.LimpiarDataUbigeo(_opcion);
 
             Console.WriteLine("Obteniendo data de Ubigeo - {0}", _endPointSet.Title);
             var json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.Ubigeo, _endPointSet.BodyTag);
@@ -61,11 +61,15 @@ namespace PE_Scrapping.Funciones
 
             if (_seleccion.Equals(Constantes.TodasLasMesas))
             {
+                Console.WriteLine("Limpiando data previa...");
+                tr.LimpiarData(_opcion);
                 ProcessAmbit(_ubigeos.ubigeos.nacional);
                 ProcessAmbit(_ubigeos.ubigeos.extranjero);
             }
             else
             {
+                Console.WriteLine("Limpiando data previa de la mesa {0}...", _mesa_seleccion);
+                tr.LimpiarDataMesa(_opcion, _mesa_seleccion);
                 Console.WriteLine("Obteniendo resultados en Mesa N° {0}", _mesa_seleccion);
                 ObtenerDetalleMesa(_fn, _mesa_seleccion);
             }
