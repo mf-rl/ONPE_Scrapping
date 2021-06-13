@@ -101,35 +101,45 @@ namespace PE_Scrapping.Funciones
             tbl_acta.Columns.Add(new DataColumn("eleccion", typeof(string)));
             tbl_acta.Columns.Add(new DataColumn("tipo_proceso", typeof(string)));
 
-            DataRow dr_acta = tbl_acta.NewRow();
-            dr_acta["mesa_numero"] = numero_mesa;
-            dr_acta["acta_numero"] = mesaDetalle.procesos.generalPre.presidencial.CCOPIA_ACTA;
-            dr_acta["acta_imagen"] = mesaDetalle.procesos.generalPre.imageActa;
-            dr_acta["habiles_numero"] = mesaDetalle.procesos.generalPre.presidencial.NNUME_HABILM;
-            dr_acta["votantes_numero"] = mesaDetalle.procesos.generalPre.presidencial.TOT_CIUDADANOS_VOTARON;
-            dr_acta["eleccion"] = opcion;
-            dr_acta["tipo_proceso"] = "PRE";
-            tbl_acta.Rows.Add(dr_acta);
+            DataRow dr_acta;
+            if (mesaDetalle.procesos.generalPre != null)
+            {
+                dr_acta = tbl_acta.NewRow();
+                dr_acta["mesa_numero"] = numero_mesa;
+                dr_acta["acta_numero"] = mesaDetalle.procesos.generalPre.presidencial.CCOPIA_ACTA;
+                dr_acta["acta_imagen"] = mesaDetalle.procesos.generalPre.imageActa;
+                dr_acta["habiles_numero"] = mesaDetalle.procesos.generalPre.presidencial.NNUME_HABILM;
+                dr_acta["votantes_numero"] = mesaDetalle.procesos.generalPre.presidencial.TOT_CIUDADANOS_VOTARON;
+                dr_acta["eleccion"] = opcion;
+                dr_acta["tipo_proceso"] = "PRE";
+                tbl_acta.Rows.Add(dr_acta);
+            }
 
-            dr_acta = tbl_acta.NewRow();
-            dr_acta["mesa_numero"] = numero_mesa;
-            dr_acta["acta_numero"] = mesaDetalle.procesos.generalCon.congresal.CCOPIA_ACTA;
-            dr_acta["acta_imagen"] = mesaDetalle.procesos.generalCon.imageActa;
-            dr_acta["habiles_numero"] = mesaDetalle.procesos.generalCon.congresal.NNUME_HABILM;
-            dr_acta["votantes_numero"] = mesaDetalle.procesos.generalCon.congresal.TOT_CIUDADANOS_VOTARON;
-            dr_acta["eleccion"] = opcion;
-            dr_acta["tipo_proceso"] = "CON";
-            tbl_acta.Rows.Add(dr_acta);
+            if (mesaDetalle.procesos.generalCon != null)
+            {
+                dr_acta = tbl_acta.NewRow();
+                dr_acta["mesa_numero"] = numero_mesa;
+                dr_acta["acta_numero"] = mesaDetalle.procesos.generalCon.congresal.CCOPIA_ACTA;
+                dr_acta["acta_imagen"] = mesaDetalle.procesos.generalCon.imageActa;
+                dr_acta["habiles_numero"] = mesaDetalle.procesos.generalCon.congresal.NNUME_HABILM;
+                dr_acta["votantes_numero"] = mesaDetalle.procesos.generalCon.congresal.TOT_CIUDADANOS_VOTARON;
+                dr_acta["eleccion"] = opcion;
+                dr_acta["tipo_proceso"] = "CON";
+                tbl_acta.Rows.Add(dr_acta);
+            }
 
-            dr_acta = tbl_acta.NewRow();
-            dr_acta["mesa_numero"] = numero_mesa;
-            dr_acta["acta_numero"] = mesaDetalle.procesos.generalPar.parlamento.CCOPIA_ACTA;
-            dr_acta["acta_imagen"] = mesaDetalle.procesos.generalPar.imageActa;
-            dr_acta["habiles_numero"] = mesaDetalle.procesos.generalPar.parlamento.NNUME_HABILM;
-            dr_acta["votantes_numero"] = mesaDetalle.procesos.generalPar.parlamento.TOT_CIUDADANOS_VOTARON;
-            dr_acta["eleccion"] = opcion;
-            dr_acta["tipo_proceso"] = "PAR";
-            tbl_acta.Rows.Add(dr_acta);
+            if (mesaDetalle.procesos.generalPar != null)
+            {
+                dr_acta = tbl_acta.NewRow();
+                dr_acta["mesa_numero"] = numero_mesa;
+                dr_acta["acta_numero"] = mesaDetalle.procesos.generalPar.parlamento.CCOPIA_ACTA;
+                dr_acta["acta_imagen"] = mesaDetalle.procesos.generalPar.imageActa;
+                dr_acta["habiles_numero"] = mesaDetalle.procesos.generalPar.parlamento.NNUME_HABILM;
+                dr_acta["votantes_numero"] = mesaDetalle.procesos.generalPar.parlamento.TOT_CIUDADANOS_VOTARON;
+                dr_acta["eleccion"] = opcion;
+                dr_acta["tipo_proceso"] = "PAR";
+                tbl_acta.Rows.Add(dr_acta);
+            }
 
             objbulk.DestinationTableName = "pe_Actas";
             objbulk.ColumnMappings.Add("mesa_numero", "mesa_numero");
@@ -150,42 +160,45 @@ namespace PE_Scrapping.Funciones
             tbl_votos.Columns.Add(new DataColumn("votos_total", typeof(int)));
             tbl_votos.Columns.Add(new DataColumn("eleccion", typeof(string)));
             tbl_votos.Columns.Add(new DataColumn("tipo_proceso", typeof(string)));
-            mesaDetalle.procesos.generalPre.votos.ForEach(v =>
-            {
-                DataRow dr_voto = tbl_votos.NewRow();
-                dr_voto["mesa_numero"] = numero_mesa;
-                dr_voto["acta_numero"] = mesaDetalle.procesos.generalPre.presidencial.CCOPIA_ACTA;
-                dr_voto["auto_nombre"] = v.AUTORIDAD;
-                dr_voto["lista_numero"] = v.NLISTA;
-                dr_voto["votos_total"] = v.congresal;
-                dr_voto["eleccion"] = opcion;
-                dr_voto["tipo_proceso"] = "PRE";
-                tbl_votos.Rows.Add(dr_voto);
-            });
-            mesaDetalle.procesos.generalCon.votos.ForEach(v =>
-            {
-                DataRow dr_voto = tbl_votos.NewRow();
-                dr_voto["mesa_numero"] = numero_mesa;
-                dr_voto["acta_numero"] = mesaDetalle.procesos.generalCon.congresal.CCOPIA_ACTA;
-                dr_voto["auto_nombre"] = v.AUTORIDAD;
-                dr_voto["lista_numero"] = v.NLISTA;
-                dr_voto["votos_total"] = v.congresal;
-                dr_voto["eleccion"] = opcion;
-                dr_voto["tipo_proceso"] = "CON";
-                tbl_votos.Rows.Add(dr_voto);
-            });
-            mesaDetalle.procesos.generalPar.votos.ForEach(v =>
-            {
-                DataRow dr_voto = tbl_votos.NewRow();
-                dr_voto["mesa_numero"] = numero_mesa;
-                dr_voto["acta_numero"] = mesaDetalle.procesos.generalPar.parlamento.CCOPIA_ACTA;
-                dr_voto["auto_nombre"] = v.AUTORIDAD;
-                dr_voto["lista_numero"] = v.NLISTA;
-                dr_voto["votos_total"] = v.congresal;
-                dr_voto["eleccion"] = opcion;
-                dr_voto["tipo_proceso"] = "PAR";
-                tbl_votos.Rows.Add(dr_voto);
-            });
+            if (mesaDetalle.procesos.generalPre != null)
+                mesaDetalle.procesos.generalPre.votos.ForEach(v =>
+                {
+                    DataRow dr_voto = tbl_votos.NewRow();
+                    dr_voto["mesa_numero"] = numero_mesa;
+                    dr_voto["acta_numero"] = mesaDetalle.procesos.generalPre.presidencial.CCOPIA_ACTA;
+                    dr_voto["auto_nombre"] = v.AUTORIDAD;
+                    dr_voto["lista_numero"] = v.NLISTA;
+                    dr_voto["votos_total"] = v.congresal;
+                    dr_voto["eleccion"] = opcion;
+                    dr_voto["tipo_proceso"] = "PRE";
+                    tbl_votos.Rows.Add(dr_voto);
+                });
+            if (mesaDetalle.procesos.generalCon != null)
+                mesaDetalle.procesos.generalCon.votos.ForEach(v =>
+                {
+                    DataRow dr_voto = tbl_votos.NewRow();
+                    dr_voto["mesa_numero"] = numero_mesa;
+                    dr_voto["acta_numero"] = mesaDetalle.procesos.generalCon.congresal.CCOPIA_ACTA;
+                    dr_voto["auto_nombre"] = v.AUTORIDAD;
+                    dr_voto["lista_numero"] = v.NLISTA;
+                    dr_voto["votos_total"] = v.congresal;
+                    dr_voto["eleccion"] = opcion;
+                    dr_voto["tipo_proceso"] = "CON";
+                    tbl_votos.Rows.Add(dr_voto);
+                });
+            if (mesaDetalle.procesos.generalPar != null)
+                mesaDetalle.procesos.generalPar.votos.ForEach(v =>
+                {
+                    DataRow dr_voto = tbl_votos.NewRow();
+                    dr_voto["mesa_numero"] = numero_mesa;
+                    dr_voto["acta_numero"] = mesaDetalle.procesos.generalPar.parlamento.CCOPIA_ACTA;
+                    dr_voto["auto_nombre"] = v.AUTORIDAD;
+                    dr_voto["lista_numero"] = v.NLISTA;
+                    dr_voto["votos_total"] = v.congresal;
+                    dr_voto["eleccion"] = opcion;
+                    dr_voto["tipo_proceso"] = "PAR";
+                    tbl_votos.Rows.Add(dr_voto);
+                });
             objbulk.DestinationTableName = "pe_Votos";
             objbulk.ColumnMappings.Add("mesa_numero", "mesa_numero");
             objbulk.ColumnMappings.Add("acta_numero", "acta_numero");
