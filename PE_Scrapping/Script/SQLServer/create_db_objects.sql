@@ -1,3 +1,4 @@
+
 IF OBJECT_ID('dbo.pe_Ubigeos', 'U') IS NOT NULL
 	drop table pe_Ubigeos
 GO

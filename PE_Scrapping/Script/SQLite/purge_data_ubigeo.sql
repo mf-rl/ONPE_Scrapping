@@ -1,0 +1,1 @@
+delete from pe_Ubigeos where eleccion = @eleccion;

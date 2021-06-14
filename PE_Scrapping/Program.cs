@@ -49,8 +49,8 @@ namespace PE_Scrapping
                 {
                     Console.WriteLine("=".PadRight(51, '='));
                     Console.WriteLine("Seleccionar opción:");
-                    Console.WriteLine("1: Ubigeo");
-                    Console.WriteLine("2: Mesa");
+                    Console.WriteLine("1: Por Ubigeo");
+                    Console.WriteLine("2: Por Mesa");
                     Console.WriteLine("=".PadRight(51, '='));
                     Console.WriteLine("Digitar opción y presionar <Enter>:");
                     Console.Write("Respuesta: ");
