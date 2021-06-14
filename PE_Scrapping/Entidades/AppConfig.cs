@@ -4,6 +4,7 @@
     {
         public Api Api { get; set; }
         public string ConnectionString { get; set; }
+        public string DataBaseName { get; set; }
         public string SavePath { get; set; }
         public bool DownloadFiles { get; set; }
         public int MilisecondsWait { get; set; }

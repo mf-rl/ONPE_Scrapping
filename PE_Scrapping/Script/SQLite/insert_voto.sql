@@ -1,0 +1,2 @@
+INSERT INTO pe_Votos (mesa_numero, acta_numero, auto_nombre, lista_numero, votos_total, eleccion, tipo_proceso) 
+VALUES (@mesa_numero, @acta_numero, @auto_nombre, @lista_numero, @votos_total, @eleccion, @tipo_proceso);
