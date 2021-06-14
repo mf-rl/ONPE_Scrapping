@@ -345,5 +345,19 @@ namespace PE_Scrapping.Funciones
                 command.ExecuteNonQuery();
             }
         }
+        public void LimpiarDataDetalleUbigeo(string opcion, string mesa_numero)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            using (var command = new SqlCommand("pe_PurgeDataDetalleUbigeo", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            })
+            {
+                command.Parameters.Add(new SqlParameter("@eleccion", opcion));
+                command.Parameters.Add(new SqlParameter("@codigo_ubigeo", mesa_numero));
+                conn.Open();
+                command.ExecuteNonQuery();
+            }
+        }
     }
 }

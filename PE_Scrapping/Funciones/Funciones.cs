@@ -19,6 +19,7 @@ namespace PE_Scrapping.Funciones
         string _opcion;
         string _seleccion;
         string _mesa_seleccion;
+        string _tipo_proceso;
         JsonSerializerOptions _settings;
         List<Department> dep = new();
         List<Province> pro = new();
@@ -29,7 +30,7 @@ namespace PE_Scrapping.Funciones
         {
 
         }
-        public Funciones(IWebDriver driver, AppConfig config, string opcion, string seleccion, string mesa_seleccion)
+        public Funciones(IWebDriver driver, AppConfig config, string opcion, string tipo_proceso, string seleccion, string mesa_seleccion)
         {
             _driver = driver;
             _config = config;
@@ -38,6 +39,7 @@ namespace PE_Scrapping.Funciones
             _opcion = opcion;
             _seleccion = seleccion;
             _mesa_seleccion = mesa_seleccion;
+            _tipo_proceso = tipo_proceso;
             _settings = new JsonSerializerOptions
             {
                 NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString
@@ -65,7 +67,7 @@ namespace PE_Scrapping.Funciones
             _ubigeos = JsonSerializer.Deserialize<Ubigeo>(json, _settings);
             if (_config.SaveData) _tran.GuardarUbigeos(_ubigeos, _opcion);
 
-            if (_seleccion.Equals(Constantes.TodasLasMesas))
+            if (_tipo_proceso.Equals(Constantes.ProcesoTotal))
             {
                 Console.WriteLine("Limpiando data previa...");
                 if (_config.SaveData) _tran.LimpiarData(_opcion);
@@ -74,10 +76,45 @@ namespace PE_Scrapping.Funciones
             }
             else
             {
-                Console.WriteLine("Limpiando data previa de la mesa {0}...", _mesa_seleccion);
-                if (_config.SaveData) _tran.LimpiarDataMesa(_opcion, _mesa_seleccion);
-                Console.WriteLine("Obteniendo resultados en Mesa N° {0}", _mesa_seleccion);
-                ObtenerDetalleMesa(_mesa_seleccion);
+                switch (_seleccion)
+                {
+                    case Constantes.ProcesoMesa:
+                        Console.WriteLine("Limpiando data previa de la mesa {0}...", _mesa_seleccion);
+                        if (_config.SaveData) _tran.LimpiarDataMesa(_opcion, _mesa_seleccion);
+                        Console.WriteLine("Obteniendo resultados en Mesa N° {0}", _mesa_seleccion);
+                        ObtenerDetalleMesa(_mesa_seleccion);
+                        break;
+                    case Constantes.ProcesoUbigeo:
+                        Console.WriteLine("Limpiando data previa de ubigeo {0}...", _mesa_seleccion);
+                        if (_config.SaveData) _tran.LimpiarDataDetalleUbigeo(_opcion, _mesa_seleccion);
+                        Console.WriteLine("Procesando ubigeo seleccionado {0}", _mesa_seleccion);
+                        string dep_raiz = _mesa_seleccion.Substring(0, 2);
+
+                        string pro_raiz = _mesa_seleccion.Substring(0, 2).PadRight(6, '0').Equals(_mesa_seleccion) ? 
+                            _mesa_seleccion.Substring(0, 2) : _mesa_seleccion.Substring(0, 4);
+
+                        string dis_raiz = _mesa_seleccion.Substring(0, 2).PadRight(6, '0').Equals(_mesa_seleccion) ? 
+                            _mesa_seleccion.Substring(0, 2) :
+                            _mesa_seleccion.Substring(0, 4).PadRight(6, '0').Equals(_mesa_seleccion) ?
+                                _mesa_seleccion.Substring(0, 4) : _mesa_seleccion;
+
+                        if (_mesa_seleccion.StartsWith("9"))
+                        {
+                            Extranjero sel_ambito = _ubigeos.ubigeos.extranjero;
+                            sel_ambito.continents = sel_ambito.continents.Where(f => f.CDGO_DEP.StartsWith(dep_raiz)).ToList();
+                            sel_ambito.countries = sel_ambito.countries.Where(f => f.CDGO_PROV.StartsWith(pro_raiz)).ToList();
+                            sel_ambito.states = sel_ambito.states.Where(f => f.CDGO_DIST.StartsWith(dis_raiz)).ToList();
+                            ProcessAmbit(sel_ambito);
+                        } else
+                        {
+                            Nacional sel_ambito = _ubigeos.ubigeos.nacional;
+                            sel_ambito.departments = sel_ambito.departments.Where(f => f.CDGO_DEP.StartsWith(dep_raiz)).ToList();
+                            sel_ambito.provinces = sel_ambito.provinces.Where(f => f.CDGO_PROV.StartsWith(pro_raiz)).ToList();
+                            sel_ambito.districts = sel_ambito.districts.Where(f => f.CDGO_DIST.StartsWith(dis_raiz)).ToList();
+                            ProcessAmbit(sel_ambito);
+                        }
+                        break;
+                }
             }
         }
         public string SendApiRequest(string url, string tag)

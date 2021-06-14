@@ -108,3 +108,37 @@ begin
 	delete from pe_Votos where eleccion = @eleccion and mesa_numero = @mesa_numero
 end
 GO
+
+IF (OBJECT_ID('dbo.pe_PurgeDataDetalleUbigeo', 'P') IS NOT NULL)
+	drop procedure pe_PurgeDataDetalleUbigeo
+GO
+create procedure pe_PurgeDataDetalleUbigeo (
+	@eleccion char(1),
+	@codigo_ubigeo varchar(6)
+)
+as
+begin
+	set nocount on;
+	declare @level varchar(6)
+	
+	select @level = case 
+		when left(@codigo_ubigeo, 2) + '0000' = @codigo_ubigeo then left(@codigo_ubigeo, 2) 
+		when left(@codigo_ubigeo, 4) + '00' = @codigo_ubigeo then left(@codigo_ubigeo, 4) 
+		else @codigo_ubigeo 
+	end
+
+	delete a from pe_Actas a
+		inner join pe_Mesas m
+			on a.mesa_numero = m.mesa_numero
+	where m.local_ubigeo like @level + '%'
+
+	delete v from pe_Votos v
+		inner join pe_Mesas m
+			on v.mesa_numero = m.mesa_numero
+	where m.local_ubigeo like @level + '%'
+
+	delete from pe_Locales where local_ubigeo like @level + '%'
+
+	delete from pe_Mesas where local_ubigeo like @level + '%'
+end
+GO

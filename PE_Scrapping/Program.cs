@@ -18,6 +18,7 @@ namespace PE_Scrapping
             string opt = string.Empty;
             string sel = string.Empty;
             string mesa_sel = string.Empty;
+            string tip_pro = string.Empty;
             while (!opt.Equals(Constantes.ProcesarPrimeraV) && !opt.Equals(Constantes.ProcesarSegundaV))
             {
                 Console.WriteLine("=".PadRight(51, '='));
@@ -30,24 +31,50 @@ namespace PE_Scrapping
                 opt = Console.ReadLine();
             }
 
-            while (!sel.Equals(Constantes.TodasLasMesas) && !sel.Equals(Constantes.MesaSeleccionada))
+            while (!tip_pro.Equals(Constantes.ProcesoTotal) && !tip_pro.Equals(Constantes.ProcesoParcial))
             {
                 Console.WriteLine("=".PadRight(51, '='));
                 Console.WriteLine("Seleccionar tipo de proceso:");
-                Console.WriteLine("1: Todo");
-                Console.WriteLine("2: Específico");
+                Console.WriteLine("1: Total");
+                Console.WriteLine("2: Parcial");
                 Console.WriteLine("=".PadRight(51, '='));
                 Console.WriteLine("Digitar opción y presionar <Enter>:");
                 Console.Write("Respuesta: ");
-                sel = Console.ReadLine();
+                tip_pro = Console.ReadLine();
             }
 
-            if (sel.Equals(Constantes.MesaSeleccionada))
+            if (tip_pro.Equals(Constantes.ProcesoParcial))
+            {
+                while (!sel.Equals(Constantes.ProcesoUbigeo) && !sel.Equals(Constantes.ProcesoMesa))
+                {
+                    Console.WriteLine("=".PadRight(51, '='));
+                    Console.WriteLine("Seleccionar opción:");
+                    Console.WriteLine("1: Ubigeo");
+                    Console.WriteLine("2: Mesa");
+                    Console.WriteLine("=".PadRight(51, '='));
+                    Console.WriteLine("Digitar opción y presionar <Enter>:");
+                    Console.Write("Respuesta: ");
+                    sel = Console.ReadLine();
+                }
+            }
+
+            if (sel.Equals(Constantes.ProcesoMesa))
             {
                 Console.WriteLine("=".PadRight(51, '='));
                 while (string.IsNullOrEmpty(mesa_sel))
                 {
                     Console.WriteLine("Ingresar número de mesa:");
+                    Console.Write("Respuesta: ");
+                    mesa_sel = Console.ReadLine();
+                }
+            }
+
+            if (sel.Equals(Constantes.ProcesoUbigeo))
+            {
+                Console.WriteLine("=".PadRight(51, '='));
+                while (string.IsNullOrEmpty(mesa_sel) || mesa_sel.Trim().Length > 6)
+                {
+                    Console.WriteLine("Ingresar ubigeo:");
                     Console.Write("Respuesta: ");
                     mesa_sel = Console.ReadLine();
                 }
@@ -64,7 +91,7 @@ namespace PE_Scrapping
             Console.WriteLine("=".PadRight(51, '='));
             Thread.Sleep(5000);
 
-            var fn = new Funciones.Funciones(driver, cfg, opt, sel, mesa_sel);
+            var fn = new Funciones.Funciones(driver, cfg, opt, tip_pro, sel, mesa_sel);
             fn.GetData();
 
             driver.Close();
