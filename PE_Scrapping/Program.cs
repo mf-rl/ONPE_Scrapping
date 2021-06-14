@@ -4,6 +4,7 @@ using OpenQA.Selenium.Chrome;
 using PE_Scrapping.Entidades;
 using PE_Scrapping.Funciones;
 using System;
+using System.IO;
 using System.Threading;
 
 namespace PE_Scrapping
@@ -95,6 +96,7 @@ namespace PE_Scrapping
             fn.GetData();
 
             driver.Close();
+            fn.AbrirFolder(Path.Combine(cfg.SavePath));
             Console.WriteLine("Finalizado. :)");
             Console.ReadKey();
         }
