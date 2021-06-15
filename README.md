@@ -6,9 +6,7 @@ Esta aplicación se encuentra en versión de pruebas. Si alguien quiere contribu
 Utiliza ChromeDriver versión 91. Verificar que chromedriver.exe se encuentre en la carpeta "runtimes", en la raiz de la aplicación. 
 En el repositorio se encuentra en la carpeta "chromedriver_win32", pero también se puede configurar la ruta del chromedriver.exe en el archivo appSettings.json, bajo el parámetro "ChromeDriverPath".
 
-![image](https://user-images.githubusercontent.com/73368752/121822532-2df92d00-cc65-11eb-9ea5-063397361d96.png)
-
-![image](https://user-images.githubusercontent.com/73368752/121796898-38261780-cbe2-11eb-8013-56f564c523b6.png)
+![image](https://user-images.githubusercontent.com/73368752/122112210-3036c500-cde6-11eb-92be-c57fdc2bb254.png)
 
 ![image](https://user-images.githubusercontent.com/73368752/121822655-e1622180-cc65-11eb-9bb6-8846cd69602d.png)
 
