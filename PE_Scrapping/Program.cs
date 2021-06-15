@@ -11,9 +11,9 @@ namespace PE_Scrapping
 {
     class Program
     {
-        static IWebDriver driver;
         static void Main(string[] args)
         {
+            Console.Title = "RESULTADOS ELECCIONES 2021 - PERÚ";
             Console.WriteLine("=".PadRight(51, '='));
             Console.WriteLine("RESULTADOS ELECCIONES 2021 - PERÚ".PadLeft(41, ' '));
             string opt = string.Empty;
@@ -85,7 +85,7 @@ namespace PE_Scrapping
             Console.WriteLine("=".PadRight(51, '='));
             Console.WriteLine("Inicializando ChromeDriver...");
             Console.WriteLine("=".PadRight(51, '='));
-            driver = new ChromeDriver(cfg.ChromeDriverPath);
+            IWebDriver driver = new ChromeDriver(cfg.ChromeDriverPath);
             driver.Manage().Window.Minimize();
             Console.WriteLine("=".PadRight(51, '='));
             Console.WriteLine("ChromeDriver Iniciado.");
@@ -98,7 +98,8 @@ namespace PE_Scrapping
             driver.Close();
             fn.AbrirFolder(Path.Combine(cfg.SavePath));
             Console.WriteLine("Finalizado. :)");
-            Console.ReadKey();
+            Console.WriteLine("Pulsar cualquier tecla para continuar...");
+            Console.ReadKey(true);
         }
         private static T InitOptions<T>() where T : new()
         {
