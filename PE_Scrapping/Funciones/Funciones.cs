@@ -8,6 +8,7 @@ using PE_Scrapping.Entidades;
 using System.Text.Json;
 using System.Threading;
 using System.Text.Json.Serialization;
+using System.Diagnostics;
 
 namespace PE_Scrapping.Funciones
 {
@@ -218,7 +219,7 @@ namespace PE_Scrapping.Funciones
                                     Console.WriteLine("---->Mesa no procesada.");
                                 else
                                 {
-                                    ObtenerDetalleMesa(m.NUMMESA, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST, l.CCODI_LOCAL);
+                                    ObtenerDetalleMesa(m.NUMMESA, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST, l.CCODI_LOCAL, l.TNOMB_LOCAL);
                                 }
                             });
                         });
@@ -244,7 +245,7 @@ namespace PE_Scrapping.Funciones
             return locales;
         }
         private void ObtenerDetalleMesa(string numero_mesa,
-            string departamento = null, string provincia = null, string distrito = null, string local = null)
+            string departamento = null, string provincia = null, string distrito = null, string local_codigo = null, string local_nombre = null)
         {
             var json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.TableDetail
                                             .Replace("{table_code}", numero_mesa)
@@ -284,7 +285,8 @@ namespace PE_Scrapping.Funciones
                             Mesa mesas = ObtenerMesas(l.CCODI_UBIGEO, l.CCODI_LOCAL);
                             if (mesas.mesasVotacion.Any(f => f.NUMMESA.Equals(numero_mesa)))
                             {
-                                local = l.CCODI_LOCAL;
+                                local_codigo = l.CCODI_LOCAL;
+                                local_nombre = l.TNOMB_LOCAL;
                             }
                         }); 
                     }
@@ -293,34 +295,64 @@ namespace PE_Scrapping.Funciones
                     distrito = string.Empty;
                     provincia = string.Empty;
                     distrito = string.Empty;
-                    local = string.Empty;
+                    local_codigo = string.Empty;
+                    local_nombre = string.Empty;
                 }                
             }
 
-            if (_config.SaveJson) GuardarJSON(json, string.Concat("detalle_mesa_", departamento, "_", provincia, "_", distrito, "_", local, "_", numero_mesa));
+            if (_config.SaveJson) GuardarJSON(json, string.Concat("detalle_mesa-", departamento, "-", provincia, "-", distrito, "-", local_codigo, "-", numero_mesa));
             if (_config.DownloadFiles)
             {
                 if (mesaDetalle.procesos.generalPre != null)
                     DescargarActa(mesaDetalle.procesos.generalPre.imageActa,
-                        string.Concat("PRE_", departamento, "_", provincia, "_", distrito, "_", local, "_", numero_mesa, ".pdf"));
+                        string.Concat("PRE-", numero_mesa, ".pdf"),
+                        departamento, provincia, distrito, local_nombre);
                 if (mesaDetalle.procesos.generalCon != null)
                     DescargarActa(mesaDetalle.procesos.generalCon.imageActa,
-                        string.Concat("CON_", departamento, "_", provincia, "_", distrito, "_", local, "_", numero_mesa, ".pdf"));
+                        string.Concat("CON-", numero_mesa, ".pdf"),
+                        departamento, provincia, distrito, local_nombre);
                 if (mesaDetalle.procesos.generalPar != null)
                     DescargarActa(mesaDetalle.procesos.generalPar.imageActa,
-                        string.Concat("PAR_", departamento, "_", provincia, "_", distrito, "_", local, "_", numero_mesa, ".pdf"));
+                        string.Concat("PAR-", numero_mesa, ".pdf"),
+                        departamento, provincia, distrito, local_nombre);
             }
         }
-        public void DescargarActa(string url_acta, string save_file)
+        public void DescargarActa(string url_acta, string save_file, string departamento, string provincia, string distrito, string local)
         {
             Uri uriResult;
             bool result = Uri.TryCreate(url_acta, UriKind.Absolute, out uriResult)
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
             if (result)
+            {
+                string full_path = Path.Combine(_config.SavePath, _endPointSet.Title, "ACTAS", departamento, provincia, distrito, FormatFileName(local));
+                if (!Directory.Exists(full_path))
+                {
+                    Directory.CreateDirectory(full_path);
+                }
+                full_path = Path.Combine(full_path, save_file);
                 using (var client = new WebClient())
                 {
-                    client.DownloadFile(url_acta, Path.Combine(_config.SavePath, _endPointSet.Title, save_file));
+                    client.DownloadFile(url_acta, full_path);
                 }
+            }                
+        }
+        private string FormatFileName(string file_name)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+            invalid.ToList().ForEach(c =>
+            {
+                file_name = file_name.Replace(c, '-');
+            });
+            return file_name;
+        }
+        public void AbrirFolder(string path)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                Arguments = path,
+                FileName = "explorer.exe"
+            };
+            Process.Start(startInfo);
         }
     }
 }
