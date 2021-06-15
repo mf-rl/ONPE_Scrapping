@@ -42,17 +42,17 @@ namespace PE_Scrapping.Entidades
         public string PROVINCIA { get; set; }
         public string DISTRITO { get; set; }
         public string CCOPIA_ACTA { get; set; }
-        public int NNUME_HABILM { get; set; }
+        public string NNUME_HABILM { get; set; }
         public string OBSERVACION { get; set; }
         public string OBSERVACION_TXT { get; set; }
-        public int N_CANDIDATOS { get; set; }
-        public int TOT_CIUDADANOS_VOTARON { get; set; }
+        public string N_CANDIDATOS { get; set; }
+        public string TOT_CIUDADANOS_VOTARON { get; set; }
     }
     public class Voto
     {
         public string CCODI_AUTO { get; set; }
         public string AUTORIDAD { get; set; }
-        public int NLISTA { get; set; }
+        public string NLISTA { get; set; }
         public string congresal { get; set; }
         public string CON_VALIDOS { get; set; }
         public string CON_EMITIDOS { get; set; }

@@ -20,7 +20,7 @@ create table pe_Mesas (
 	local_ubigeo TEXT,
 	local_codigo TEXT,
 	mesa_numero TEXT,
-	mesa_procesado intEGER,
+	mesa_procesado TEXT,
 	mesa_imagen TEXT,
 	eleccion char(1)
 );
@@ -29,8 +29,8 @@ create table pe_Actas (
 	mesa_numero TEXT,
 	acta_numero TEXT,
 	acta_imagen TEXT,
-	habiles_numero intEGER,
-	votantes_numero intEGER,
+	habiles_numero TEXT,
+	votantes_numero TEXT,
 	eleccion char(1),
 	tipo_proceso char(3)
 );
@@ -39,8 +39,8 @@ create table pe_Votos (
 	mesa_numero TEXT,
 	acta_numero TEXT,
 	auto_nombre TEXT,
-	lista_numero intEGER,
-	votos_total intEGER,
+	lista_numero TEXT,
+	votos_total TEXT,
 	eleccion char(1),
 	tipo_proceso char(3)
 )

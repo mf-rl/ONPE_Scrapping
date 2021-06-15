@@ -86,8 +86,8 @@ namespace PE_Scrapping.Funciones
             }
         }
         private SQLiteCommand SetCommandActa(SQLiteConnection connection,
-            string mesa_numero, string acta_numero, string acta_imagen, 
-            int habiles_numero, int votantes_numero, string eleccion, string tipo_proceso)
+            string mesa_numero, string acta_numero, string acta_imagen,
+            string habiles_numero, string votantes_numero, string eleccion, string tipo_proceso)
         {
             SQLiteCommand command = new(connection);
             command.CommandText = ReadQuery("insert_acta");
@@ -102,7 +102,7 @@ namespace PE_Scrapping.Funciones
         }
         private SQLiteCommand SetCommandVoto(SQLiteConnection connection,
             string mesa_numero, string acta_numero, string auto_nombre,
-            int lista_numero, int votos_total, string eleccion, string tipo_proceso)
+            string lista_numero, string votos_total, string eleccion, string tipo_proceso)
         {
             SQLiteCommand command = new(connection);
             command.CommandText = ReadQuery("insert_voto");
@@ -151,7 +151,7 @@ namespace PE_Scrapping.Funciones
                                 mesaDetalle.procesos.generalPre.presidencial.CCOPIA_ACTA,
                                 v.AUTORIDAD,
                                 v.NLISTA,
-                                Convert.ToInt32(v.congresal),
+                                v.congresal,
                                 opcion, "PRE"
                                 ).ExecuteNonQuery();
                         });
@@ -172,7 +172,7 @@ namespace PE_Scrapping.Funciones
                                 mesaDetalle.procesos.generalCon.congresal.CCOPIA_ACTA,
                                 v.AUTORIDAD,
                                 v.NLISTA,
-                                Convert.ToInt32(v.congresal),
+                                v.congresal,
                                 opcion, "CON"
                                 ).ExecuteNonQuery();
                         });
@@ -193,7 +193,7 @@ namespace PE_Scrapping.Funciones
                                 mesaDetalle.procesos.generalPar.parlamento.CCOPIA_ACTA,
                                 v.AUTORIDAD,
                                 v.NLISTA,
-                                Convert.ToInt32(v.congresal),
+                                v.congresal,
                                 opcion, "PAR"
                                 ).ExecuteNonQuery();
                         });

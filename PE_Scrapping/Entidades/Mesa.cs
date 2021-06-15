@@ -9,7 +9,7 @@ namespace PE_Scrapping.Entidades
     public class MesasVotacion
     {
         public string NUMMESA { get; set; }
-        public int PROCESADO { get; set; }
+        public string PROCESADO { get; set; }
         public string IMAGEN { get; set; }
     }
 }
