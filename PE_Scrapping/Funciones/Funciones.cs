@@ -179,9 +179,6 @@ namespace PE_Scrapping.Funciones
             ambito_desc = UbigeoAuxiliar(ambito.GetType().Name, ambito);
             if (_tipo_proceso.Equals(Constantes.ProcesoParcial) && _seleccion.Equals(Constantes.ProcesoUbigeo)) {
                 _total_items = dis.Count;
-                if (_mesa_seleccion.Substring(2, 4).Equals("0000")) 
-                    _total_items = dep.Count;
-                else if (_mesa_seleccion.Substring(4, 2).Equals("00")) _total_items = pro.Count;
             }
             int index_dep = 0;
             Console.WriteLine("Procesando ámbito: {0}", ambito_desc);
@@ -201,17 +198,7 @@ namespace PE_Scrapping.Funciones
                     {
                         _actual_item++;
                         index_dis++;
-
-
-                        if (_tipo_proceso.Equals(Constantes.ProcesoParcial) && _seleccion.Equals(Constantes.ProcesoUbigeo))
-                        {
-                            _actual_item = index_dis;
-                            if (_mesa_seleccion.Substring(2, 4).Equals("0000"))
-                                _actual_item = index_pro;
-                            else if (_mesa_seleccion.Substring(4, 2).Equals("00")) _actual_item = index_dep;
-                        }
-                        MostrarPorcentajeAvance(_actual_item, _total_items);
-
+                        MostrarPorcentajeAvance(_actual_item - 1, _total_items);
 
                         Console.WriteLine("{0}.{1}.{2}.- {3}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), ddd.DESC_DIST);
                         int index_loc = 0;
@@ -236,8 +223,7 @@ namespace PE_Scrapping.Funciones
                                 }
                             });
                         });
-
-
+                        MostrarPorcentajeAvance(_actual_item, _total_items);
                     });
                 });
             });          
