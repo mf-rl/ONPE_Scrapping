@@ -57,6 +57,13 @@ namespace PE_Scrapping.Funciones
             if (!Directory.Exists(ruta_guardar)) Directory.CreateDirectory(ruta_guardar);
             File.WriteAllText(Path.Combine(ruta_guardar, archivo_nombre), json);
         }
+        private void ErrorLog(string mensaje)
+        {
+            var ruta_guardar = Path.Combine(_config.SavePath, _endPointSet.Title, "LOG");
+            if (!Directory.Exists(ruta_guardar)) Directory.CreateDirectory(ruta_guardar);
+            string[] mensajes = { mensaje };
+            File.AppendAllLines(Path.Combine(ruta_guardar, "errors.log"), mensajes);
+        }
         public static TValue JsonToObject<TValue>(string json, JsonSerializerOptions? options = null)
         {
             JObject _jobject = JObject.Parse(json);
@@ -349,7 +356,33 @@ namespace PE_Scrapping.Funciones
                 full_path = Path.Combine(full_path, save_file);
                 using (var client = new WebClient())
                 {
-                    client.DownloadFile(url_acta, full_path);
+                    bool success = false;
+                    int intento = 0;
+                    while (!success && intento <= 5)
+                    {
+                        try
+                        {
+                            client.DownloadFile(url_acta, full_path);
+                            success = true;
+                        }
+                        catch(Exception ex)
+                        {
+                            ErrorLog("Error descardando acta.");
+                            ErrorLog(url_acta);
+                            ErrorLog(ex.Message);
+                            Console.WriteLine("Error de conexión al intentar descargar acta. Reintentando...");
+                            intento++;
+                            if (intento < 5)
+                            {
+                                Console.WriteLine("Reintentando...");
+                            }
+                            else
+                            {
+                                Console.WriteLine("No se puedo descargar acta luego de 5 intentos.");
+                                success = true;
+                            }
+                        }
+                    }
                 }
             }                
         }
