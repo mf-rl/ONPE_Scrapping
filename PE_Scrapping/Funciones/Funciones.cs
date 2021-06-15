@@ -30,6 +30,7 @@ namespace PE_Scrapping.Funciones
         List<District> dis = new();
         TransaccionLite _lite;
         Ubigeo _ubigeos;
+        string ambito_desc = string.Empty;
         public Funciones()
         {
 
@@ -173,8 +174,7 @@ namespace PE_Scrapping.Funciones
         }
 
         public void ProcessAmbit(object ambito)
-        {
-            string ambito_desc = string.Empty;
+        {            
             string json = string.Empty;
             ambito_desc = UbigeoAuxiliar(ambito.GetType().Name, ambito);
             if (_tipo_proceso.Equals(Constantes.ProcesoParcial) && _seleccion.Equals(Constantes.ProcesoUbigeo)) {
@@ -234,7 +234,7 @@ namespace PE_Scrapping.Funciones
                                     .Replace("{ubigeo_code}", codigo_distrito)
                                     .Replace("{locale_code}", codigo_local)
                                     , _endPointSet.BodyTag);
-            var ruta_carpeta = Path.Combine(departamento, provincia, distrito);
+            var ruta_carpeta = Path.Combine(ambito_desc, departamento, provincia, distrito);
             if (_config.SaveJson) GuardarJSON(json, string.Concat("Mesas de ", FormatFileName(nombre_local)), ruta_carpeta);
             Mesa mesas = JsonToObject<Mesa>(json);
             return mesas;
@@ -242,7 +242,7 @@ namespace PE_Scrapping.Funciones
         private Local ObtenerLocales(string codigo_distrito, string departamento, string provincia, string distrito)
         {
             var json = SendApiRequest(_endPointSet.BaseUri + _endPointSet.Locale.Replace("{ubigeo_code}", codigo_distrito), _endPointSet.BodyTag);
-            var ruta_carpeta = Path.Combine(departamento, provincia);
+            var ruta_carpeta = Path.Combine(ambito_desc, departamento, provincia);
             if (_config.SaveJson) GuardarJSON(json, string.Concat("Locales de ", distrito), ruta_carpeta);
             Local locales = JsonToObject<Local>(json);
             return locales;
@@ -264,9 +264,9 @@ namespace PE_Scrapping.Funciones
                 Console.WriteLine("Obteniendo detalle de ubigeo para descarga de acta.");
 
                 if (mesaDetalle.procesos.generalPre.presidencial.CCODI_UBIGEO.StartsWith("9"))
-                    UbigeoAuxiliar(Constantes.AmbitoExtranjero, _ubigeos.ubigeos.extranjero);
+                    ambito_desc = UbigeoAuxiliar(Constantes.AmbitoExtranjero, _ubigeos.ubigeos.extranjero);
                 else
-                    UbigeoAuxiliar(Constantes.AmbitoNacional, _ubigeos.ubigeos.nacional);
+                    ambito_desc = UbigeoAuxiliar(Constantes.AmbitoNacional, _ubigeos.ubigeos.nacional);
 
 
                 District _distrito = dis.FirstOrDefault(f => f.CDGO_DIST.Equals(mesaDetalle.procesos.generalPre.presidencial.CCODI_UBIGEO));
@@ -306,7 +306,7 @@ namespace PE_Scrapping.Funciones
                 }                
             }
 
-            var ruta_carpeta = Path.Combine(departamento, provincia, distrito, FormatFileName(local_nombre));
+            var ruta_carpeta = Path.Combine(ambito_desc, departamento, provincia, distrito, FormatFileName(local_nombre));
             if (_config.SaveJson) GuardarJSON(json, string.Concat("Detalle de Mesa Nro ", numero_mesa), ruta_carpeta);
             if (_config.DownloadFiles)
             {
@@ -341,7 +341,7 @@ namespace PE_Scrapping.Funciones
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
             if (result)
             {
-                string full_path = Path.Combine(_config.SavePath, _endPointSet.Title, "ACTAS", departamento, provincia, distrito, FormatFileName(local));
+                string full_path = Path.Combine(_config.SavePath, _endPointSet.Title, "ACTAS", ambito_desc, departamento, provincia, distrito, FormatFileName(local));
                 if (!Directory.Exists(full_path))
                 {
                     Directory.CreateDirectory(full_path);
