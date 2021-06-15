@@ -378,7 +378,7 @@ namespace PE_Scrapping.Funciones
                             }
                             else
                             {
-                                Console.WriteLine("No se puedo descargar acta luego de 5 intentos.");
+                                Console.WriteLine("No se pudo descargar acta luego de 5 intentos.");
                                 success = true;
                             }
                         }
