@@ -51,7 +51,7 @@ namespace PE_Scrapping.Funciones
         }
         private void GuardarJSON(string json, string nombre, string carpeta = null)
         {            
-            var archivo_nombre = string.Concat(nombre, ".json");
+            var archivo_nombre = string.Concat(nombre.Trim(), ".json");
             var ruta_guardar = Path.Combine(_config.SavePath, _endPointSet.Title, "JSON", string.IsNullOrEmpty(carpeta) ? string.Empty : carpeta);
             if (!Directory.Exists(ruta_guardar)) Directory.CreateDirectory(ruta_guardar);
             File.WriteAllText(Path.Combine(ruta_guardar, archivo_nombre), json);
@@ -360,7 +360,7 @@ namespace PE_Scrapping.Funciones
             {
                 file_name = file_name.Replace(c, '-');
             });
-            return file_name;
+            return file_name.Trim();
         }
         public void AbrirFolder(string path)
         {
