@@ -31,6 +31,7 @@ namespace PE_Scrapping.Funciones
         TransaccionLite _lite;
         Ubigeo _ubigeos;
         string ambito_desc = string.Empty;
+        string error_root = string.Empty;
         public Funciones(IWebDriver driver, AppConfig config, string opcion, string tipo_proceso, string seleccion, string mesa_seleccion)
         {
             _driver = driver;
@@ -55,10 +56,11 @@ namespace PE_Scrapping.Funciones
         }
         private void ErrorLog(string mensaje)
         {
+            error_root = string.IsNullOrEmpty(error_root) ? Guid.NewGuid().ToString() : error_root;
             var ruta_guardar = Path.Combine(_config.SavePath, _endPointSet.Title, "LOG");
             if (!Directory.Exists(ruta_guardar)) Directory.CreateDirectory(ruta_guardar);
             string[] mensajes = { mensaje };
-            File.AppendAllLines(Path.Combine(ruta_guardar, "errors.log"), mensajes);
+            File.AppendAllLines(Path.Combine(ruta_guardar, string.Concat("errors_", error_root, ".log")), mensajes);
         }
         public static TValue JsonToObject<TValue>(string json, JsonSerializerOptions? options = null)
         {
