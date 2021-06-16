@@ -94,10 +94,10 @@ namespace PE_Scrapping
 
             var fn = new Funciones.Funciones(driver, cfg, opt, tip_pro, sel, mesa_sel);
             fn.GetData();
-
             driver.Close();
-            fn.AbrirFolder(Path.Combine(cfg.SavePath));
             Console.WriteLine("Finalizado. :)");
+            fn.PurgarData();
+            fn.AbrirFolder(Path.Combine(cfg.SavePath));
             Console.WriteLine("Pulsar cualquier tecla para continuar...");
             Console.ReadKey(true);
         }
