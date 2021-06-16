@@ -38,13 +38,8 @@ namespace PE_Scrapping.Funciones
         }
         private string GetDataBaseName(string database_path)
         {
-            var database_name = Path.GetFileName(database_path);
-            var last_database = Directory
-                .GetFiles(Path.GetDirectoryName(database_path))
-                .ToList().Where(f => f.Contains(database_name))
-                .ToList().OrderByDescending(o => o).Select(f => f.Replace(database_path, string.Empty)).FirstOrDefault();
-            int.TryParse(last_database, out int counter);
-            return Path.Combine(Path.GetDirectoryName(database_path), string.Concat(database_name, (counter + 1).ToString()));
+            var database_name = string.Concat(Path.GetFileName(database_path), ".", Guid.NewGuid().ToString());
+            return Path.Combine(Path.GetDirectoryName(database_path), database_name);
         }
         public static SQLiteConnection GetInstance(string DBName)
         {
