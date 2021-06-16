@@ -2,6 +2,7 @@
 using System;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 
 namespace PE_Scrapping.Funciones
 {
@@ -9,17 +10,24 @@ namespace PE_Scrapping.Funciones
     {
         private static bool IsDbRecentlyCreated = false;
         private static string _dbName;
+        private static string _dbAbsolute;
         public TransaccionLite(string DBName)
         {
-            _dbName = DBName;
-            if (!File.Exists(Path.GetFullPath(DBName)))
+            _dbAbsolute = DBName;
+            CheckDataBaseFile(_dbAbsolute);
+            _dbName = GetDataBaseName(DBName);
+            CheckDataBaseFile(_dbName);
+        }
+        private void CheckDataBaseFile(string path)
+        {
+            if (!File.Exists(Path.GetFullPath(path)))
             {
-                SQLiteConnection.CreateFile(DBName);
+                SQLiteConnection.CreateFile(path);
                 IsDbRecentlyCreated = true;
             }
-            using (var ctx = GetInstance(DBName))
+            if (IsDbRecentlyCreated)
             {
-                if (IsDbRecentlyCreated)
+                using (var ctx = GetInstance(path))
                 {
                     using (var command = new SQLiteCommand(ReadQuery("create_db_objects"), ctx))
                     {
@@ -27,6 +35,16 @@ namespace PE_Scrapping.Funciones
                     }
                 }
             }
+        }
+        private string GetDataBaseName(string database_path)
+        {
+            var database_name = Path.GetFileName(database_path);
+            var last_database = Directory
+                .GetFiles(Path.GetDirectoryName(database_path))
+                .ToList().Where(f => f.Contains(database_name))
+                .ToList().OrderByDescending(o => o).Select(f => f.Replace(database_path, string.Empty)).FirstOrDefault();
+            int.TryParse(last_database, out int counter);
+            return Path.Combine(Path.GetDirectoryName(database_path), string.Concat(database_name, (counter + 1).ToString()));
         }
         public static SQLiteConnection GetInstance(string DBName)
         {
@@ -339,7 +357,6 @@ namespace PE_Scrapping.Funciones
                 }
             }
         }
-
         private string ReadQuery(string query_name)
         {
             var query_path = string.Concat(@"Script\SQLite\", query_name, ".sql");
@@ -353,6 +370,59 @@ namespace PE_Scrapping.Funciones
                 }
             }
             return query;
+        }
+        public void PurgarData()
+        {
+            try
+            {
+                using (var db = GetInstance(_dbAbsolute))
+                {
+                    using (var cmd = new SQLiteCommand(db))
+                    {
+                        cmd.CommandText = "ATTACH DATABASE '" + _dbAbsolute + "' AS firstDB;";
+                        cmd.ExecuteNonQuery();
+
+
+                        cmd.CommandText = "ATTACH DATABASE '" + _dbName + "' AS secondDB";
+                        cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = "INSERT OR REPLACE INTO firstDB.pe_Ubigeos ("
+                            + "ubigeo_codigo, ubigeo_descripcion, ubigeo_padre, eleccion, nivel, ambito) "
+                            + "SELECT ubigeo_codigo, ubigeo_descripcion, ubigeo_padre, eleccion, nivel, ambito "
+                            + "FROM secondDB.pe_Ubigeos";
+                        cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = "INSERT OR REPLACE INTO firstDB.pe_Locales ("
+                            + "local_codigo, local_ubigeo, local_nombre, local_direccion, eleccion) "
+                            + "SELECT local_codigo, local_ubigeo, local_nombre, local_direccion, eleccion "
+                            + "FROM secondDB.pe_Locales";
+                        cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = "INSERT OR REPLACE INTO firstDB.pe_Mesas ("
+                            + "local_ubigeo, local_codigo, mesa_numero, mesa_procesado, mesa_imagen, eleccion) "
+                            + "SELECT local_ubigeo, local_codigo, mesa_numero, mesa_procesado, mesa_imagen, eleccion "
+                            + "FROM secondDB.pe_Mesas";
+                        cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = "INSERT OR REPLACE INTO firstDB.pe_Actas ("
+                            + "mesa_numero, acta_numero, acta_imagen, habiles_numero, votantes_numero, eleccion, tipo_proceso) "
+                            + "SELECT mesa_numero, acta_numero, acta_imagen, habiles_numero, votantes_numero, eleccion, tipo_proceso "
+                            + "FROM secondDB.pe_Actas";
+                        cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = "INSERT OR REPLACE INTO firstDB.pe_Votos ("
+                            + "mesa_numero, acta_numero, auto_nombre, lista_numero, votos_total, eleccion, tipo_proceso) "
+                            + "SELECT mesa_numero, acta_numero, auto_nombre, lista_numero, votos_total, eleccion, tipo_proceso "
+                            + "FROM secondDB.pe_Votos";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                File.Delete(_dbName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
     }
 }

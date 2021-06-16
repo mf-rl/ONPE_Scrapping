@@ -31,10 +31,6 @@ namespace PE_Scrapping.Funciones
         TransaccionLite _lite;
         Ubigeo _ubigeos;
         string ambito_desc = string.Empty;
-        public Funciones()
-        {
-
-        }
         public Funciones(IWebDriver driver, AppConfig config, string opcion, string tipo_proceso, string seleccion, string mesa_seleccion)
         {
             _driver = driver;
@@ -179,7 +175,6 @@ namespace PE_Scrapping.Funciones
             }
             return ambito_desc;
         }
-
         public void ProcessAmbit(object ambito)
         {            
             string json = string.Empty;
@@ -367,8 +362,7 @@ namespace PE_Scrapping.Funciones
                         }
                         catch(Exception ex)
                         {
-                            ErrorLog("Error descardando acta.");
-                            ErrorLog(url_acta);
+                            ErrorLog(string.Concat("Error descargando acta.: ", full_path));
                             ErrorLog(ex.Message);
                             Console.WriteLine("Error de conexión al intentar descargar acta. Reintentando...");
                             intento++;
@@ -378,6 +372,7 @@ namespace PE_Scrapping.Funciones
                             }
                             else
                             {
+                                ErrorLog("No se pudo descargar acta luego de 5 intentos.");
                                 Console.WriteLine("No se pudo descargar acta luego de 5 intentos.");
                                 success = true;
                             }
@@ -403,6 +398,10 @@ namespace PE_Scrapping.Funciones
                 FileName = "explorer.exe"
             };
             Process.Start(startInfo);
+        }
+        public void PurgarData()
+        {
+            _lite.PurgarData();
         }
     }
 }

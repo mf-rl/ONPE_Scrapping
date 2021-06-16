@@ -5,7 +5,8 @@ create table pe_Ubigeos (
 	ubigeo_padre TEXT,
 	eleccion char(1),
 	nivel intEGER,
-	ambito char(1)
+	ambito char(1),
+	PRIMARY KEY(ubigeo_codigo, eleccion)
 );
 DROP TABLE IF EXISTS pe_Locales;
 create table pe_Locales (
@@ -13,7 +14,8 @@ create table pe_Locales (
 	local_ubigeo TEXT,
 	local_nombre TEXT,
 	local_direccion TEXT,
-	eleccion char(1)
+	eleccion char(1),
+	PRIMARY KEY(local_ubigeo, local_codigo, eleccion)
 );
 DROP TABLE IF EXISTS pe_Mesas;
 create table pe_Mesas (
@@ -22,7 +24,8 @@ create table pe_Mesas (
 	mesa_numero TEXT,
 	mesa_procesado TEXT,
 	mesa_imagen TEXT,
-	eleccion char(1)
+	eleccion char(1),
+	PRIMARY KEY(local_ubigeo, local_codigo, mesa_numero, eleccion)
 );
 DROP TABLE IF EXISTS pe_Actas;
 create table pe_Actas (
@@ -32,7 +35,8 @@ create table pe_Actas (
 	habiles_numero TEXT,
 	votantes_numero TEXT,
 	eleccion char(1),
-	tipo_proceso char(3)
+	tipo_proceso char(3),
+	PRIMARY KEY(mesa_numero, acta_numero, tipo_proceso, eleccion)
 );
 DROP TABLE IF EXISTS pe_Votos;
 create table pe_Votos (
@@ -42,5 +46,6 @@ create table pe_Votos (
 	lista_numero TEXT,
 	votos_total TEXT,
 	eleccion char(1),
-	tipo_proceso char(3)
+	tipo_proceso char(3),
+	PRIMARY KEY(mesa_numero, acta_numero, auto_nombre, tipo_proceso, eleccion)
 )
