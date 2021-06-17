@@ -89,6 +89,7 @@ namespace PE_Scrapping
 
             ChromeOptions options = new ChromeOptions { Proxy = null };
             IWebDriver driver = new ChromeDriver(cfg.ChromeDriverPath, options);
+            driver.Manage().Timeouts().PageLoad = TimeSpan.FromMilliseconds(cfg.MilisecondsWait);
             driver.Manage().Window.Minimize();
             Console.WriteLine("=".PadRight(51, '='));
             Console.WriteLine("ChromeDriver Iniciado.");

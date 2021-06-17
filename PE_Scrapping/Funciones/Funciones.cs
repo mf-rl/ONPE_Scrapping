@@ -148,7 +148,6 @@ namespace PE_Scrapping.Funciones
                 try
                 {
                     _driver.Navigate().GoToUrl(url);
-                    Thread.Sleep(_config.MilisecondsWait);
                     json = _driver.FindElement(By.TagName(tag)).Text;
                     success = true;
                 }
@@ -196,20 +195,23 @@ namespace PE_Scrapping.Funciones
                 List<Province> level2 = pro.Where(f => f.CDGO_PADRE.Equals(d.CDGO_DEP)).ToList();
                 level2.ForEach(dd =>
                 {
-                    _etiqueta = string.Concat(_etiqueta, "-", dd.DESC_PROV);
+                    _etiqueta = string.Concat(d.DESC_DEP, "-", dd.DESC_PROV);
                     index_pro++;
                     Console.WriteLine("{0}.{1}.- {2}", index_dep.ToString(), index_pro.ToString(), dd.DESC_PROV);
                     int index_dis = 0;
                     List<District> level3 = dis.Where(f => f.CDGO_PADRE.Equals(dd.CDGO_PROV)).ToList();
                     level3.ForEach(ddd =>
                     {
-                        _etiqueta = string.Concat(_etiqueta, "-", ddd.DESC_DIST);
+                        _etiqueta = string.Concat(d.DESC_DEP, "-", dd.DESC_PROV, "-", ddd.DESC_DIST);
                         _actual_item++;
                         index_dis++;
                         Console.WriteLine("{0}.{1}.{2}.- {3}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), ddd.DESC_DIST);
                         int index_loc = 0;
                         Local locales = ObtenerLocales(ddd.CDGO_DIST, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST);
-                        if (_tipo_proceso.Equals(Constantes.ProcesoParcial) && _seleccion.Equals(Constantes.ProcesoUbigeo) && _mesa_seleccion.Substring(4, 2).Equals("00"))
+                        if (_tipo_proceso.Equals(Constantes.ProcesoParcial) 
+                            && _seleccion.Equals(Constantes.ProcesoUbigeo) 
+                            && !_mesa_seleccion.Substring(2, 2).Equals("00") 
+                            && !_mesa_seleccion.Substring(4, 2).Equals("00"))
                         {
                             _actual_item = 0;
                             _total_items = locales.locales.Count;
@@ -217,8 +219,12 @@ namespace PE_Scrapping.Funciones
                         if (_config.SaveData) _lite.GuardarLocales(locales, _opcion);
                         locales.locales.ForEach(l =>
                         {
+                            _etiqueta = string.Concat(d.DESC_DEP, "-", dd.DESC_PROV, "-", ddd.DESC_DIST, "-", l.TNOMB_LOCAL);
                             index_loc++;
-                            if (_tipo_proceso.Equals(Constantes.ProcesoParcial) && _seleccion.Equals(Constantes.ProcesoUbigeo) && _mesa_seleccion.Substring(4, 2).Equals("00"))
+                            if (_tipo_proceso.Equals(Constantes.ProcesoParcial) 
+                                && _seleccion.Equals(Constantes.ProcesoUbigeo)
+                                && !_mesa_seleccion.Substring(2, 2).Equals("00")
+                                && !_mesa_seleccion.Substring(4, 2).Equals("00"))
                             {
                                 _actual_item = index_loc;
                             }
