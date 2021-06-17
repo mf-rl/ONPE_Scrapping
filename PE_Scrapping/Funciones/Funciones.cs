@@ -22,8 +22,9 @@ namespace PE_Scrapping.Funciones
         string _seleccion;
         string _mesa_seleccion;
         string _tipo_proceso;
-        int _total_items = 0;
-        int _actual_item = 0;
+        decimal _total_items = 0;
+        decimal _actual_item = 0;
+        string _etiqueta = string.Empty;
         JsonSerializerOptions _settings;
         List<Department> dep = new();
         List<Province> pro = new();
@@ -188,29 +189,40 @@ namespace PE_Scrapping.Funciones
             Console.WriteLine("Procesando ámbito: {0}", ambito_desc);
             dep.ForEach(d =>
             {
+                _etiqueta = d.DESC_DEP;
                 index_dep++;
                 Console.WriteLine("{0}.- {1}", index_dep.ToString(), d.DESC_DEP);
                 int index_pro = 0;
                 List<Province> level2 = pro.Where(f => f.CDGO_PADRE.Equals(d.CDGO_DEP)).ToList();
                 level2.ForEach(dd =>
                 {
+                    _etiqueta = string.Concat(_etiqueta, "-", dd.DESC_PROV);
                     index_pro++;
                     Console.WriteLine("{0}.{1}.- {2}", index_dep.ToString(), index_pro.ToString(), dd.DESC_PROV);
                     int index_dis = 0;
                     List<District> level3 = dis.Where(f => f.CDGO_PADRE.Equals(dd.CDGO_PROV)).ToList();
                     level3.ForEach(ddd =>
                     {
+                        _etiqueta = string.Concat(_etiqueta, "-", ddd.DESC_DIST);
                         _actual_item++;
                         index_dis++;
-                        MostrarPorcentajeAvance(_actual_item - 1, _total_items);
-
                         Console.WriteLine("{0}.{1}.{2}.- {3}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), ddd.DESC_DIST);
                         int index_loc = 0;
                         Local locales = ObtenerLocales(ddd.CDGO_DIST, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST);
+                        if (_tipo_proceso.Equals(Constantes.ProcesoParcial) && _seleccion.Equals(Constantes.ProcesoUbigeo) && _mesa_seleccion.Substring(4, 2).Equals("00"))
+                        {
+                            _actual_item = 0;
+                            _total_items = locales.locales.Count;
+                        }
                         if (_config.SaveData) _lite.GuardarLocales(locales, _opcion);
                         locales.locales.ForEach(l =>
                         {
                             index_loc++;
+                            if (_tipo_proceso.Equals(Constantes.ProcesoParcial) && _seleccion.Equals(Constantes.ProcesoUbigeo) && _mesa_seleccion.Substring(4, 2).Equals("00"))
+                            {
+                                _actual_item = index_loc;
+                            }
+                            MostrarPorcentajeAvance(_actual_item - 1, _total_items);
                             Console.WriteLine("{0}.{1}.{2}.{3}.- Local: {4}", index_dep.ToString(), index_pro.ToString(), index_dis.ToString(), index_loc.ToString(), l.TNOMB_LOCAL);
                             int index_mes = 0;
                             Mesa mesas = ObtenerMesas(ddd.CDGO_DIST, l.CCODI_LOCAL, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST, l.TNOMB_LOCAL);
@@ -226,8 +238,8 @@ namespace PE_Scrapping.Funciones
                                     ObtenerDetalleMesa(m.NUMMESA, d.DESC_DEP, dd.DESC_PROV, ddd.DESC_DIST, l.CCODI_LOCAL, l.TNOMB_LOCAL);
                                 }
                             });
+                            MostrarPorcentajeAvance(_actual_item, _total_items);
                         });
-                        MostrarPorcentajeAvance(_actual_item, _total_items);
                     });
                 });
             });          
@@ -258,11 +270,7 @@ namespace PE_Scrapping.Funciones
                                             .Replace("{table_code}", numero_mesa)
                                             , _endPointSet.BodyTag);
             MesaDetalle mesaDetalle = JsonToObject<MesaDetalle>(json);
-
             if (!_tipo_proceso.Equals(Constantes.ProcesoTotal) && _seleccion.Equals(Constantes.ProcesoMesa)) _total_items = 1;
-
-            if (_config.SaveData) _lite.GuardarMesaDetalle(mesaDetalle, numero_mesa, _opcion);
-
             if (string.IsNullOrEmpty(distrito))
             {
                 Console.WriteLine("Obteniendo detalle de ubigeo para descarga de acta.");
@@ -312,6 +320,7 @@ namespace PE_Scrapping.Funciones
 
             var ruta_carpeta = Path.Combine(ambito_desc, departamento, provincia, distrito, FormatFileName(local_nombre));
             if (_config.SaveJson) GuardarJSON(json, string.Concat("Detalle de Mesa Nro ", numero_mesa), ruta_carpeta);
+            if (_config.SaveData) _lite.GuardarMesaDetalle(mesaDetalle, numero_mesa, _opcion);
             if (_config.DownloadFiles)
             {
                 if (mesaDetalle.procesos.generalPre != null)
@@ -333,10 +342,10 @@ namespace PE_Scrapping.Funciones
                 MostrarPorcentajeAvance(_actual_item, _total_items);
             }
         }
-        private void MostrarPorcentajeAvance(int index, int total)
+        private void MostrarPorcentajeAvance(decimal index, decimal total)
         {
-            int avance = index * 100 / total;
-            Console.Title = string.Format("Procesando {0}%", avance.ToString());
+            decimal avance = index * 100 / total;
+            Console.Title = string.Format("{0}% - {1}", decimal.Round(avance, 2).ToString(), _etiqueta);
         }
         public void DescargarActa(string url_acta, string save_file, string departamento, string provincia, string distrito, string local)
         {

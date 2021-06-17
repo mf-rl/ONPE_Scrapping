@@ -22,6 +22,7 @@ namespace PE_Scrapping.Funciones
         {
             if (!File.Exists(Path.GetFullPath(path)))
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
                 SQLiteConnection.CreateFile(path);
                 IsDbRecentlyCreated = true;
             }
@@ -110,7 +111,7 @@ namespace PE_Scrapping.Funciones
             command.Parameters.Add(new SQLiteParameter("@habiles_numero", habiles_numero));
             command.Parameters.Add(new SQLiteParameter("@votantes_numero", votantes_numero));
             command.Parameters.Add(new SQLiteParameter("@eleccion", eleccion));
-            command.Parameters.Add(new SQLiteParameter("@tipo_proceso", "PRE"));
+            command.Parameters.Add(new SQLiteParameter("@tipo_proceso", tipo_proceso));
             return command;
         }
         private SQLiteCommand SetCommandVoto(SQLiteConnection connection,
@@ -412,7 +413,10 @@ namespace PE_Scrapping.Funciones
                         cmd.ExecuteNonQuery();
                     }
                 }
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
                 File.Delete(_dbName);
+                
             }
             catch (Exception ex)
             {

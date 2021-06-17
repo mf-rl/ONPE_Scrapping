@@ -4,6 +4,7 @@ using OpenQA.Selenium.Chrome;
 using PE_Scrapping.Entidades;
 using PE_Scrapping.Funciones;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
@@ -85,7 +86,9 @@ namespace PE_Scrapping
             Console.WriteLine("=".PadRight(51, '='));
             Console.WriteLine("Inicializando ChromeDriver...");
             Console.WriteLine("=".PadRight(51, '='));
-            IWebDriver driver = new ChromeDriver(cfg.ChromeDriverPath);
+
+            ChromeOptions options = new ChromeOptions { Proxy = null };
+            IWebDriver driver = new ChromeDriver(cfg.ChromeDriverPath, options);
             driver.Manage().Window.Minimize();
             Console.WriteLine("=".PadRight(51, '='));
             Console.WriteLine("ChromeDriver Iniciado.");
