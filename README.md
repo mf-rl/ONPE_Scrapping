@@ -1,4 +1,4 @@
-# PE_Scrapping
+# ONPE_Scrapping
 Pequeña aplicación para obtener datos de las elecciones presidenciales de Perú, que es información pública y se encuentra publicada en la misma página de la ONPE.
 
 Esta aplicación se encuentra en versión de pruebas. Si alguien quiere contribuir y mejorar, es bienvenido. 
