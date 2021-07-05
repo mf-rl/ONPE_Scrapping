@@ -1,124 +1,136 @@
-﻿using Microsoft.Extensions.Configuration;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using PE_Scrapping.Entidades;
+﻿using System;
 using PE_Scrapping.Funciones;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 
 namespace PE_Scrapping
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.Title = "RESULTADOS ELECCIONES 2021 - PERÚ";
-            Console.WriteLine("=".PadRight(51, '='));
-            Console.WriteLine("RESULTADOS ELECCIONES 2021 - PERÚ".PadLeft(41, ' '));
             string opt = string.Empty;
             string sel = string.Empty;
-            string mesa_sel = string.Empty;
             string tip_pro = string.Empty;
-            while (!opt.Equals(Constantes.ProcesarPrimeraV) && !opt.Equals(Constantes.ProcesarSegundaV))
-            {
-                Console.WriteLine("=".PadRight(51, '='));
-                Console.WriteLine("Seleccionar proceso:");
-                Console.WriteLine("1: Resultados 1ra Vuelta");
-                Console.WriteLine("2: Resultados 2da Vuelta");
-                Console.WriteLine("=".PadRight(51, '='));
-                Console.WriteLine("Digitar opción y presionar <Enter>:");
-                Console.Write("Respuesta: ");
-                opt = Console.ReadLine();
-            }
+            string mesa_sel = string.Empty;
 
-            while (!tip_pro.Equals(Constantes.ProcesoTotal) && !tip_pro.Equals(Constantes.ProcesoParcial))
+            Console.Title = Constants.APP_TITLE;
+            Handler.WriteLines(new string[]
             {
-                Console.WriteLine("=".PadRight(51, '='));
-                Console.WriteLine("Seleccionar tipo de proceso:");
-                Console.WriteLine("1: Total");
-                Console.WriteLine("2: Parcial");
-                Console.WriteLine("=".PadRight(51, '='));
-                Console.WriteLine("Digitar opción y presionar <Enter>:");
-                Console.Write("Respuesta: ");
-                tip_pro = Console.ReadLine();
-            }
-
-            if (tip_pro.Equals(Constantes.ProcesoParcial))
-            {
-                while (!sel.Equals(Constantes.ProcesoUbigeo) && !sel.Equals(Constantes.ProcesoMesa))
+                Messages.DOUBLE_LINE(),
+                Constants.APP_TITLE.PadLeft(41, ' ')
+            });
+            Handler.RepeatActionIf(
+                () =>
                 {
-                    Console.WriteLine("=".PadRight(51, '='));
-                    Console.WriteLine("Seleccionar opción:");
-                    Console.WriteLine("1: Por Ubigeo");
-                    Console.WriteLine("2: Por Mesa");
-                    Console.WriteLine("=".PadRight(51, '='));
-                    Console.WriteLine("Digitar opción y presionar <Enter>:");
-                    Console.Write("Respuesta: ");
-                    sel = Console.ReadLine();
-                }
-            }
-
-            if (sel.Equals(Constantes.ProcesoMesa))
-            {
-                Console.WriteLine("=".PadRight(51, '='));
-                while (string.IsNullOrEmpty(mesa_sel))
+                    Handler.WriteLines(new string[]{
+                        Messages.DOUBLE_LINE(),
+                        Messages.SELECT_PROCESS_INPUT,
+                        Messages.FIRST_STAGE_OPTION,
+                        Messages.SECOND_STAGE_OPTION,
+                        Messages.DOUBLE_LINE(),
+                        Messages.SELECT_OPTION_AND_ENTER
+                    });
+                    opt = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                },
+                () =>
                 {
-                    Console.WriteLine("Ingresar número de mesa:");
-                    Console.Write("Respuesta: ");
-                    mesa_sel = Console.ReadLine();
+                    return !opt.Equals(Constants.ProcesarPrimeraV) && !opt.Equals(Constants.ProcesarSegundaV);
                 }
-            }
-
-            if (sel.Equals(Constantes.ProcesoUbigeo))
-            {
-                Console.WriteLine("=".PadRight(51, '='));
-                while (string.IsNullOrEmpty(mesa_sel) || mesa_sel.Trim().Length > 6)
+            );
+            Handler.RepeatActionIf(
+                () =>
                 {
-                    Console.WriteLine("Ingresar ubigeo:");
-                    Console.Write("Respuesta: ");
-                    mesa_sel = Console.ReadLine();
+                    Handler.WriteLines(new string[]
+                    {
+                        Messages.DOUBLE_LINE(),
+                        Messages.SELECT_PROCESS_TYPE_INPUT,
+                        Messages.TOTAL_PROCESS_OPTION,
+                        Messages.PARTIAL_PROCESS_OPTION,
+                        Messages.DOUBLE_LINE(),
+                        Messages.SELECT_OPTION_AND_ENTER
+                    });
+                    tip_pro = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                },
+                () =>
+                {
+                    return !tip_pro.Equals(Constants.ProcesoTotal) && !tip_pro.Equals(Constants.ProcesoParcial);
                 }
-            }
-
-            var cfg = InitOptions<AppConfig>();
-            Console.WriteLine("=".PadRight(51, '='));
-            Console.WriteLine("Inicializando ChromeDriver...");
-            Console.WriteLine("=".PadRight(51, '='));
-
-            ChromeOptions options = new ChromeOptions { Proxy = null };
-            IWebDriver driver = new ChromeDriver(cfg.ChromeDriverPath, options);
-            driver.Manage().Timeouts().PageLoad = TimeSpan.FromMilliseconds(cfg.MilisecondsWait);
-            driver.Manage().Window.Minimize();
-            Console.WriteLine("=".PadRight(51, '='));
-            Console.WriteLine("ChromeDriver Iniciado.");
-            Console.WriteLine("=".PadRight(51, '='));
-            Thread.Sleep(5000);
-
-            var fn = new Funciones.Funciones(driver, cfg, opt, tip_pro, sel, mesa_sel);
-            fn.GetData();
-            driver.Close();
-            Console.WriteLine("Finalizado. :)");
-            fn.PurgarData();
-            fn.AbrirFolder(Path.Combine(cfg.SavePath));
-            Console.WriteLine("Pulsar cualquier tecla para continuar...");
-            Console.ReadKey(true);
-        }
-        private static T InitOptions<T>() where T : new()
-        {
-            var config = InitConfig();
-            return config.Get<T>();
-        }
-        private static IConfigurationRoot InitConfig()
-        {
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            var builder = new ConfigurationBuilder()
-                .AddJsonFile($"appSettings.json", true, true)
-                .AddJsonFile($"appSettings.{env}.json", true, true)
-                .AddEnvironmentVariables();
-
-            return builder.Build();
+            );
+            Handler.ExecuteActionIf(
+                () =>
+                {
+                    Handler.RepeatActionIf(
+                        () =>
+                        {
+                            Handler.WriteLines(new string[]
+                            {
+                                Messages.DOUBLE_LINE(),
+                                Messages.SELECT_PARTIAL_OPTION,
+                                Messages.UBIGEO_OPTION,
+                                Messages.TABLE_OPTION,
+                                Messages.DOUBLE_LINE(),
+                                Messages.SELECT_OPTION_AND_ENTER
+                            });
+                            sel = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                        },
+                        () =>
+                        {
+                            return !sel.Equals(Constants.ProcesoUbigeo) && !sel.Equals(Constants.ProcesoMesa);
+                        }
+                    );
+                },
+                () =>
+                {
+                    return tip_pro.Equals(Constants.ProcesoParcial);
+                }
+            );
+            Handler.ExecuteActionIf(
+                () =>
+                {
+                    Handler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
+                    Handler.RepeatActionIf(
+                        () =>
+                        {
+                            Handler.WriteLines(new string[] { Messages.INPUT_TABLE_NUMBER });
+                            mesa_sel = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                        },
+                        () =>
+                        {
+                            return string.IsNullOrEmpty(mesa_sel);
+                        }
+                    );
+                },
+                () =>
+                {
+                    return sel.Equals(Constants.ProcesoMesa);
+                }
+            );
+            Handler.ExecuteActionIf(
+                () =>
+                {
+                    Handler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
+                    Handler.RepeatActionIf(
+                        () =>
+                        {
+                            Handler.WriteLines(new string[] { Messages.INPUT_UBIGEO_CODE });
+                            mesa_sel = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                        },
+                        () =>
+                        {
+                            return string.IsNullOrEmpty(mesa_sel) || mesa_sel.Trim().Length > 6;
+                        }
+                    );
+                },
+                () =>
+                {
+                    return sel.Equals(Constants.ProcesoUbigeo);
+                }
+            );
+            MainProcess.ExecuteProcess(opt, tip_pro, sel, mesa_sel);
+            Handler.WriteLines(new string[] {
+                Messages.PROCESS_FINISHED,
+                Messages.PRESS_ANY_KEY,
+            });
+            Console.ReadKey();
         }
     }
 }
