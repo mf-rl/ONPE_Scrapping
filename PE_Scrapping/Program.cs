@@ -1,5 +1,6 @@
 ﻿using System;
 using PE_Scrapping.Funciones;
+using CommonFuntionalMethods;
 
 namespace PE_Scrapping
 {
@@ -13,15 +14,15 @@ namespace PE_Scrapping
             string mesa_sel = string.Empty;
 
             Console.Title = Constants.APP_TITLE;
-            Handler.WriteLines(new string[]
+            FunctionalHandler.WriteLines(new string[]
             {
                 Messages.DOUBLE_LINE(),
                 Constants.APP_TITLE.PadLeft(41, ' ')
             });
-            Handler.RepeatActionIf(
+            FunctionalHandler.RepeatActionIf(
                 () =>
                 {
-                    Handler.WriteLines(new string[]{
+                    FunctionalHandler.WriteLines(new string[]{
                         Messages.DOUBLE_LINE(),
                         Messages.SELECT_PROCESS_INPUT,
                         Messages.FIRST_STAGE_OPTION,
@@ -29,17 +30,17 @@ namespace PE_Scrapping
                         Messages.DOUBLE_LINE(),
                         Messages.SELECT_OPTION_AND_ENTER
                     });
-                    opt = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                    opt = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
                 },
                 () =>
                 {
                     return !opt.Equals(Constants.ProcesarPrimeraV) && !opt.Equals(Constants.ProcesarSegundaV);
                 }
             );
-            Handler.RepeatActionIf(
+            FunctionalHandler.RepeatActionIf(
                 () =>
                 {
-                    Handler.WriteLines(new string[]
+                    FunctionalHandler.WriteLines(new string[]
                     {
                         Messages.DOUBLE_LINE(),
                         Messages.SELECT_PROCESS_TYPE_INPUT,
@@ -48,20 +49,20 @@ namespace PE_Scrapping
                         Messages.DOUBLE_LINE(),
                         Messages.SELECT_OPTION_AND_ENTER
                     });
-                    tip_pro = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                    tip_pro = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
                 },
                 () =>
                 {
                     return !tip_pro.Equals(Constants.ProcesoTotal) && !tip_pro.Equals(Constants.ProcesoParcial);
                 }
             );
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    Handler.RepeatActionIf(
+                    FunctionalHandler.RepeatActionIf(
                         () =>
                         {
-                            Handler.WriteLines(new string[]
+                            FunctionalHandler.WriteLines(new string[]
                             {
                                 Messages.DOUBLE_LINE(),
                                 Messages.SELECT_PARTIAL_OPTION,
@@ -70,7 +71,7 @@ namespace PE_Scrapping
                                 Messages.DOUBLE_LINE(),
                                 Messages.SELECT_OPTION_AND_ENTER
                             });
-                            sel = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                            sel = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
                         },
                         () =>
                         {
@@ -83,15 +84,15 @@ namespace PE_Scrapping
                     return tip_pro.Equals(Constants.ProcesoParcial);
                 }
             );
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    Handler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
-                    Handler.RepeatActionIf(
+                    FunctionalHandler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
+                    FunctionalHandler.RepeatActionIf(
                         () =>
                         {
-                            Handler.WriteLines(new string[] { Messages.INPUT_TABLE_NUMBER });
-                            mesa_sel = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                            FunctionalHandler.WriteLines(new string[] { Messages.INPUT_TABLE_NUMBER });
+                            mesa_sel = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
                         },
                         () =>
                         {
@@ -104,15 +105,15 @@ namespace PE_Scrapping
                     return sel.Equals(Constants.ProcesoMesa);
                 }
             );
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    Handler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
-                    Handler.RepeatActionIf(
+                    FunctionalHandler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
+                    FunctionalHandler.RepeatActionIf(
                         () =>
                         {
-                            Handler.WriteLines(new string[] { Messages.INPUT_UBIGEO_CODE });
-                            mesa_sel = Handler.GetUserInput(Messages.WAIT_FOR_ANSWER);
+                            FunctionalHandler.WriteLines(new string[] { Messages.INPUT_UBIGEO_CODE });
+                            mesa_sel = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
                         },
                         () =>
                         {
@@ -126,7 +127,7 @@ namespace PE_Scrapping
                 }
             );
             MainProcess.ExecuteProcess(opt, tip_pro, sel, mesa_sel);
-            Handler.WriteLines(new string[] {
+            FunctionalHandler.WriteLines(new string[] {
                 Messages.PROCESS_FINISHED,
                 Messages.PRESS_ANY_KEY,
             });

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using PE_Scrapping.Tablas;
 using Newtonsoft.Json.Linq;
+using CommonFuntionalMethods;
 using PE_Scrapping.Entidades;
 using System.Collections.Generic;
 
@@ -47,7 +48,7 @@ namespace PE_Scrapping.Funciones
             HttpHandler.StartWebDriver(
                 () =>
                 {
-                    Handler.WriteLines(new string[]
+                    FunctionalHandler.WriteLines(new string[]
                     {
                         Messages.DOUBLE_LINE(),
                         Messages.DRIVER_INITIATED,
@@ -62,7 +63,7 @@ namespace PE_Scrapping.Funciones
         public static void ReadData()
         {
             ReadUbigeoData();
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
                     _dis = TDistritos;
@@ -74,7 +75,7 @@ namespace PE_Scrapping.Funciones
                 },
                 () =>
                 {
-                    Handler.ExecuteActionIf(
+                    FunctionalHandler.ExecuteActionIf(
                         () =>
                         {
                             ReadElectionDataByUbigeo();
@@ -107,7 +108,7 @@ namespace PE_Scrapping.Funciones
                 var pro_act = TProvincias.Where(p => p.CDGO_PROV.Equals(d.CDGO_PADRE)).FirstOrDefault();
                 var dep_act = TDepartamentos.Where(d => d.CDGO_DEP.Equals(pro_act.CDGO_PADRE)).FirstOrDefault();
                 _etq_base = Path.Combine(dep_act.DESC_DEP, pro_act.DESC_PROV, d.DESC_DIST);
-                Handler.WriteLines(new string[]
+                FunctionalHandler.WriteLines(new string[]
                 {
                     string.Format(Messages.READING, _etq_base)
                 });
@@ -116,11 +117,11 @@ namespace PE_Scrapping.Funciones
                 _locales.AddRange(locales.locales);
                 locales.locales.ForEach(l =>
                 {
-                    Handler.WriteLines(new string[]
+                    FunctionalHandler.WriteLines(new string[]
                     {
                         string.Concat(Constants.TAB_KEY, l.TNOMB_LOCAL)
                     });
-                    _appendName = Handler.FormatFileName(l.TNOMB_LOCAL);
+                    _appendName = FunctionalHandler.FormatFileName(l.TNOMB_LOCAL);
                     Mesa mesas = ReadApiData<Mesa>(_endPointSet.Table.Replace(_config.Api.RequestParameters.UbigeoCode, d.CDGO_DIST).Replace(_config.Api.RequestParameters.LocaleCode, l.CCODI_LOCAL));
                     _mesas.AddRange(mesas.mesasVotacion);
                     
@@ -129,11 +130,11 @@ namespace PE_Scrapping.Funciones
                         TMesas.Add(new TMesa { 
                             local_codigo = l.CCODI_LOCAL, local_ubigeo = l.CCODI_UBIGEO, mesa_numero = m.NUMMESA, mesa_imagen = m.IMAGEN, mesa_procesado = m.PROCESADO, eleccion = _opcion
                         });
-                        Handler.WriteLines(new string[]
+                        FunctionalHandler.WriteLines(new string[]
                         {
                             string.Concat(Constants.TAB_KEY, Constants.TAB_KEY, m.NUMMESA)
                         });
-                        _appendName = string.Concat(Handler.FormatFileName(l.TNOMB_LOCAL), "_Mesa Nro ", m.NUMMESA);
+                        _appendName = string.Concat(FunctionalHandler.FormatFileName(l.TNOMB_LOCAL), "_Mesa Nro ", m.NUMMESA);
                         MesaDetalle mesaDetalle = ReadApiData<MesaDetalle>(_endPointSet.TableDetail.Replace(_config.Api.RequestParameters.TableCode, m.NUMMESA));
                         _mesaDetalles.Add(mesaDetalle);
 
@@ -150,7 +151,7 @@ namespace PE_Scrapping.Funciones
         private static void ReadElectionDataByUbigeo()
         {
             _mesa_seleccion = _mesa_seleccion.Trim();
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 ()  =>
                 {
                     _mesa_seleccion = _mesa_seleccion.EndsWith("0000") ? _mesa_seleccion.Substring(0, 2) :
@@ -163,7 +164,7 @@ namespace PE_Scrapping.Funciones
                 },
                 () =>
                 {
-                    Handler.WriteLines(new string[]
+                    FunctionalHandler.WriteLines(new string[]
                     {
                         Messages.DOUBLE_LINE(),
                         Messages.UBIGEO_NOT_FOUND,
@@ -172,7 +173,7 @@ namespace PE_Scrapping.Funciones
                     return;
                 }
             );
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
                     ReadElectionData();
@@ -183,7 +184,7 @@ namespace PE_Scrapping.Funciones
                 },
                 () =>
                 {
-                    Handler.WriteLines(new string[]
+                    FunctionalHandler.WriteLines(new string[]
                     {
                         Messages.DOUBLE_LINE(),
                         Messages.UBIGEO_NOT_FOUND,
@@ -197,10 +198,10 @@ namespace PE_Scrapping.Funciones
             _etq_base = "Consulta_por_mesa";
             _appendName = string.Concat("_Mesa Nro ", _mesa_seleccion);
             var tableDetail = ReadApiData<MesaDetalle>(_endPointSet.TableDetail.Replace(_config.Api.RequestParameters.TableCode, _mesa_seleccion));
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    Handler.WriteLines(new string[]
+                    FunctionalHandler.WriteLines(new string[]
                     {
                         string.Format(Messages.READING, string.Format(Messages.TABLE_NUMBER, _mesa_seleccion))
                     });
@@ -309,7 +310,7 @@ namespace PE_Scrapping.Funciones
                 },
                 () =>
                 {
-                    Handler.WriteLines(new string[]
+                    FunctionalHandler.WriteLines(new string[]
                     {
                         Messages.DOUBLE_LINE(),
                         Messages.TABLE_NOT_FOUND,
@@ -348,7 +349,7 @@ namespace PE_Scrapping.Funciones
         {
             FormatDataToSave();
             DataConnection.ConnectionStart(_config.DataBaseName);
-            Handler.ExecuteActionIf(
+            FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
                     DataConnection.PurgeAllData(_opcion);
@@ -360,7 +361,7 @@ namespace PE_Scrapping.Funciones
                 () =>
                 {
                     DataConnection.PurgeUbigeoData(_opcion);
-                    Handler.ExecuteActionIf(
+                    FunctionalHandler.ExecuteActionIf(
                         () =>
                         {
                             DataConnection.PurgeDataByUbigeo(_opcion, _mesa_seleccion);
@@ -427,7 +428,7 @@ namespace PE_Scrapping.Funciones
         }
         private static void DescargarActas(MesaDetalle mesaDetalle, MesasVotacion m, Locale l)
         {
-            Handler.ExecuteParallelActions(new List<Action>()
+            FunctionalHandler.ExecuteParallelActions(new List<Action>()
             {
                 () =>
                 {
@@ -436,7 +437,7 @@ namespace PE_Scrapping.Funciones
                         HttpHandler.DownloadFile(mesaDetalle.procesos.generalPre.imageActa,
                             string.Concat("PRE-", m.NUMMESA, ".pdf"),
                                 Path.Combine(_config.SavePath, _endPointSet.Title, "ACTAS", _etq_base),
-                                Handler.FormatFileName(l.TNOMB_LOCAL));
+                                FunctionalHandler.FormatFileName(l.TNOMB_LOCAL));
                     }
                 },
                 () =>
@@ -445,7 +446,7 @@ namespace PE_Scrapping.Funciones
                     {
                         HttpHandler.DownloadFile(mesaDetalle.procesos.generalCon.imageActa,
                             string.Concat("CON-", m.NUMMESA, ".pdf"), Path.Combine(_config.SavePath, "{0}"),
-                                Path.Combine(_etq_base, Handler.FormatFileName(l.TNOMB_LOCAL)));
+                                Path.Combine(_etq_base, FunctionalHandler.FormatFileName(l.TNOMB_LOCAL)));
                     }
                 },
                 () =>
@@ -454,7 +455,7 @@ namespace PE_Scrapping.Funciones
                     {
                         HttpHandler.DownloadFile(mesaDetalle.procesos.generalPar.imageActa,
                             string.Concat("PAR-", m.NUMMESA, ".pdf"), Path.Combine(_config.SavePath, "{0}"),
-                                Path.Combine(_etq_base, Handler.FormatFileName(l.TNOMB_LOCAL)));
+                                Path.Combine(_etq_base, FunctionalHandler.FormatFileName(l.TNOMB_LOCAL)));
                     }
                 }
             });
