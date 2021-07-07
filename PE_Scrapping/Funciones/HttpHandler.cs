@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using OpenQA.Selenium;
 using System.Threading;
+using CommonFuntionalMethods;
 using OpenQA.Selenium.Chrome;
 
 namespace PE_Scrapping.Funciones
@@ -13,7 +14,7 @@ namespace PE_Scrapping.Funciones
         static string error_root = string.Empty;
         public static void StartWebDriver(Action action, string ChromeDriverPath, int MilisecondsWait)
         {
-            Handler.WriteLines(new string[] {
+            FunctionalHandler.WriteLines(new string[] {
                 Messages.DOUBLE_LINE(),
                 Messages.INITIALIZING_DRIVER,
                 Messages.DOUBLE_LINE(),
@@ -22,7 +23,7 @@ namespace PE_Scrapping.Funciones
             _driver = new ChromeDriver(ChromeDriverPath, options);
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMilliseconds(MilisecondsWait);
             _driver.Manage().Window.Minimize();
-            Handler.WriteLines(new string[]
+            FunctionalHandler.WriteLines(new string[]
             {
                 Messages.DOUBLE_LINE(),
                 Messages.DRIVER_INITIATED,
