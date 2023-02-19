@@ -26,7 +26,7 @@ Request URL: https://resultadoshistorico.onpe.gob.pe/v1/EG2021/mesas/actas/11/01
 Request URL: https://resultadoshistorico.onpe.gob.pe/v1/EG2021/mesas/detalle/000169<br />
 <br />
 2da Vuelta<br />
-Request URL: https://api.resultadossep.eleccionesgenerales2021.pe/ecp/ubigeos/T<br />
-Request URL: https://api.resultadossep.eleccionesgenerales2021.pe/mesas/locales/020206<br />
-Request URL: https://api.resultadossep.eleccionesgenerales2021.pe/mesas/actas/11/020206/I924<br />
-Request URL: https://api.resultadossep.eleccionesgenerales2021.pe/mesas/detalle/060486<br />
+Request URL: https://resultadoshistorico.onpe.gob.pe/assets/json/SEP2021/ecp/ubigeos/T.json<br />
+Request URL: https://resultadoshistorico.onpe.gob.pe/assets/json/SEP2021/mesas/locales/020206.json<br />
+Request URL: https://resultadoshistorico.onpe.gob.pe/assets/json/SEP2021/mesas/actas/11/020206/I924.json<br />
+Request URL: https://resultadoshistorico.onpe.gob.pe/assets/json/SEP2021/mesas/detalle/060486.json<br />
