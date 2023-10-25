@@ -15,26 +15,24 @@ namespace PE_Scrapping.Funciones
             string json = string.Empty;
             while (!success)
             {
-                using (HttpClient client = new())
+                using HttpClient client = new();
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
+                try
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
-                    try
+                    HttpResponseMessage response = await client.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        HttpResponseMessage response = await client.GetAsync(url);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            json = await response.Content.ReadAsStringAsync();
-                            success = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"HTTP request failed with status code: {response.StatusCode} for {url}");
-                        }
-
+                        json = await response.Content.ReadAsStringAsync();
+                        success = true;
                     }
-                    catch { /*Do nothing. Just retry if it fails */ }
+                    else
+                    {
+                        Console.WriteLine($"HTTP request failed with status code: {response.StatusCode} for {url}");
+                    }
+
                 }
+                catch { /*Do nothing. Just retry if it fails */ }
             }
             return json;
         }
@@ -51,41 +49,39 @@ namespace PE_Scrapping.Funciones
                 }
                 full_path = Path.Combine(full_path, save_file);
 
-                using (HttpClient client = new())
+                using HttpClient client = new();
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
+                bool success = false;
+                int intento = 0;
+                while (!success && intento <= 5)
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
-                    bool success = false;
-                    int intento = 0;
-                    while (!success && intento <= 5)
+                    try
                     {
-                        try
+                        HttpResponseMessage response = await client.GetAsync(url_file);
+
+                        if (response.IsSuccessStatusCode)
                         {
-                            HttpResponseMessage response = await client.GetAsync(url_file);
-
-                            if (response.IsSuccessStatusCode)
-                            {
-                                byte[] fileBytes = await response.Content.ReadAsByteArrayAsync();
-                                File.WriteAllBytes(full_path, fileBytes);
-                            }
-
-                            success = true;
+                            byte[] fileBytes = await response.Content.ReadAsByteArrayAsync();
+                            File.WriteAllBytes(full_path, fileBytes);
                         }
-                        catch (Exception ex)
+
+                        success = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorLog(string.Concat("Error descargando acta.: ", full_path), path);
+                        ErrorLog(ex.Message, path);
+                        Console.WriteLine("Error de conexión al intentar descargar acta. Reintentando...");
+                        intento++;
+                        if (intento < 5)
                         {
-                            ErrorLog(string.Concat("Error descargando acta.: ", full_path), path);
-                            ErrorLog(ex.Message, path);
-                            Console.WriteLine("Error de conexión al intentar descargar acta. Reintentando...");
-                            intento++;
-                            if (intento < 5)
-                            {
-                                Console.WriteLine("Reintentando...");
-                            }
-                            else
-                            {
-                                ErrorLog("No se pudo descargar acta luego de 5 intentos.", path);
-                                Console.WriteLine("No se pudo descargar acta luego de 5 intentos.");
-                                success = true;
-                            }
+                            Console.WriteLine("Reintentando...");
+                        }
+                        else
+                        {
+                            ErrorLog("No se pudo descargar acta luego de 5 intentos.", path);
+                            Console.WriteLine("No se pudo descargar acta luego de 5 intentos.");
+                            success = true;
                         }
                     }
                 }

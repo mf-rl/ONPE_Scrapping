@@ -6,7 +6,6 @@
         public string DataBaseName { get; set; }
         public string SavePath { get; set; }
         public bool DownloadFiles { get; set; }
-        public int MilisecondsWait { get; set; }
         public bool SaveJson { get; set; }
         public bool SaveData { get; set; }
         public string JsonFileExtension { get; set; }
