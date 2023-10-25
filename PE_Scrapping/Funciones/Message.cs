@@ -19,9 +19,7 @@
 
         public static string SELECT_OPTION_AND_ENTER = "Digitar opción y presionar <Enter>:";
         public static string WAIT_FOR_ANSWER = "Respuesta: ";
-
-        public static string INITIALIZING_DRIVER = "Inicializando ChromeDriver...";
-        public static string DRIVER_INITIATED = "ChromeDriver Iniciado.";
+                
         public static string PROCESS_FINISHED = "Finalizado. :)";
         public static string PRESS_ANY_KEY = "Pulsar cualquier tecla para continuar...";
         public static string READING_DATA = "Leyendo datos de web apis...";

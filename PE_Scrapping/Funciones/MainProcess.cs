@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using PE_Scrapping.Tablas;
 using Newtonsoft.Json.Linq;
-using CommonFuntionalMethods;
+using YPandar.Common.Functional;
 using PE_Scrapping.Entidades;
 using System.Collections.Generic;
 
@@ -11,12 +11,11 @@ namespace PE_Scrapping.Funciones
 {
     public static class MainProcess
     {
+        static InputParameters _input = new();
+
         static EndPointSet _endPointSet;
         static AppConfig _config;
-        static string _opcion;
-        static string _seleccion;
-        static string _mesa_seleccion;
-        static string _tipo_proceso;
+
         static string _etq_base;
         static string _appendName;
 
@@ -37,28 +36,20 @@ namespace PE_Scrapping.Funciones
         static List<MesasVotacion> _mesas = new();
         static List<MesaDetalle> _mesaDetalles = new();
 
-        public static void ExecuteProcess(string opcion, string tipo_proceso, string seleccion, string mesa_seleccion)
+        public static void ExecuteProcess(InputParameters input)
         {
-            _opcion = opcion;
-            _seleccion = seleccion;
-            _tipo_proceso = tipo_proceso;
-            _mesa_seleccion = mesa_seleccion;
+            _input = input;
             _config = Configuration.Initialize<AppConfig>();
-            _endPointSet = opcion.Equals(Constants.ProcesarPrimeraV) ? _config.Api.First : _config.Api.Second;            
-            HttpHandler.StartWebDriver(
-                () =>
-                {
-                    FunctionalHandler.WriteLines(new string[]
-                    {
-                        Messages.DOUBLE_LINE(),
-                        Messages.DRIVER_INITIATED,
-                        Messages.DOUBLE_LINE(),
-                        Messages.READING_DATA
-                    });
-                    ReadData();
-                    if (_config.SaveData) SaveData();
-                }, _config.MilisecondsWait
-            );
+            _endPointSet = input.ElectionType.Equals(Constants.ProcesarPrimeraV) ? _config.Api.First : _config.Api.Second;
+
+            FunctionalHandler.WriteLines(new string[]
+            {
+                Messages.DOUBLE_LINE(),
+                Messages.DOUBLE_LINE(),
+                Messages.READING_DATA
+            });
+            ReadData();
+            if (_config.SaveData) SaveData();
         }
         public static void ReadData()
         {
@@ -71,7 +62,7 @@ namespace PE_Scrapping.Funciones
                 },
                 () =>
                 {
-                    return _tipo_proceso.Equals(Constants.ProcesoTotal);
+                    return _input.ProcessType.Equals(Constants.ProcesoTotal);
                 },
                 () =>
                 {
@@ -82,7 +73,7 @@ namespace PE_Scrapping.Funciones
                         },
                         () =>
                         {
-                            return _seleccion.Equals(Constants.ProcesoUbigeo);
+                            return _input.PartialType.Equals(Constants.ProcesoUbigeo);
                         },
                         () =>
                         {
@@ -128,7 +119,7 @@ namespace PE_Scrapping.Funciones
                     mesas.mesasVotacion.ForEach(m =>
                     {
                         TMesas.Add(new TMesa { 
-                            local_codigo = l.CCODI_LOCAL, local_ubigeo = l.CCODI_UBIGEO, mesa_numero = m.NUMMESA, mesa_imagen = m.IMAGEN, mesa_procesado = m.PROCESADO, eleccion = _opcion
+                            local_codigo = l.CCODI_LOCAL, local_ubigeo = l.CCODI_UBIGEO, mesa_numero = m.NUMMESA, mesa_imagen = m.IMAGEN, mesa_procesado = m.PROCESADO, eleccion = _input.ElectionType
                         });
                         FunctionalHandler.WriteLines(new string[]
                         {
@@ -150,17 +141,17 @@ namespace PE_Scrapping.Funciones
         }
         private static void ReadElectionDataByUbigeo()
         {
-            _mesa_seleccion = _mesa_seleccion.Trim();
+            _input.UbigeoCode = _input.UbigeoCode.Trim();
             FunctionalHandler.ExecuteActionIf(
                 ()  =>
                 {
-                    _mesa_seleccion = _mesa_seleccion.EndsWith("0000") ? _mesa_seleccion.Substring(0, 2) :
-                        _mesa_seleccion.EndsWith("00") ? _mesa_seleccion.Substring(0, 4) : _mesa_seleccion;
-                    _dis = TDistritos.Where(o => o.CDGO_DIST.Contains(_mesa_seleccion.Trim())).ToList();
+                    _input.UbigeoCode = _input.UbigeoCode.EndsWith("0000") ? _input.UbigeoCode.Substring(0, 2) :
+                        _input.UbigeoCode.EndsWith("00") ? _input.UbigeoCode.Substring(0, 4) : _input.UbigeoCode;
+                    _dis = TDistritos.Where(o => o.CDGO_DIST.Contains(_input.UbigeoCode.Trim())).ToList();
                 },
                 () =>
                 {
-                    return _mesa_seleccion.Length.Equals(6);
+                    return _input.UbigeoCode.Length.Equals(6);
                 },
                 () =>
                 {
@@ -170,7 +161,6 @@ namespace PE_Scrapping.Funciones
                         Messages.UBIGEO_NOT_FOUND,
                         Messages.DOUBLE_LINE()
                     });
-                    return;
                 }
             );
             FunctionalHandler.ExecuteActionIf(
@@ -196,14 +186,14 @@ namespace PE_Scrapping.Funciones
         private static void ReadElectionDataByTable()
         {
             _etq_base = "Consulta_por_mesa";
-            _appendName = string.Concat("_Mesa Nro ", _mesa_seleccion);
-            var tableDetail = ReadApiData<MesaDetalle>(_endPointSet.TableDetail.Replace(_config.Api.RequestParameters.TableCode, _mesa_seleccion));
+            _appendName = string.Concat("_Mesa Nro ", _input.TableNumber);
+            var tableDetail = ReadApiData<MesaDetalle>(_endPointSet.TableDetail.Replace(_config.Api.RequestParameters.TableCode, _input.TableNumber));
             FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
                     FunctionalHandler.WriteLines(new string[]
                     {
-                        string.Format(Messages.READING, string.Format(Messages.TABLE_NUMBER, _mesa_seleccion))
+                        string.Format(Messages.READING, string.Format(Messages.TABLE_NUMBER, _input.TableNumber))
                     });
                     _mesaDetalles.Add(tableDetail);
                     ReadApiData<Local>(_endPointSet.Locale.Replace(_config.Api.RequestParameters.UbigeoCode, tableDetail.procesos.generalPre.presidencial.CCODI_UBIGEO))
@@ -214,7 +204,7 @@ namespace PE_Scrapping.Funciones
                                 _endPointSet.Table
                                     .Replace(_config.Api.RequestParameters.UbigeoCode, tableDetail.procesos.generalPre.presidencial.CCODI_UBIGEO)
                                     .Replace(_config.Api.RequestParameters.LocaleCode, l.CCODI_LOCAL)
-                                ).mesasVotacion.FirstOrDefault(m => m.NUMMESA.Equals(_mesa_seleccion));
+                                ).mesasVotacion.FirstOrDefault(m => m.NUMMESA.Equals(_input.TableNumber));
                             if (table != null)
                             {
                                 _mesas.Add(table);
@@ -229,7 +219,7 @@ namespace PE_Scrapping.Funciones
                                     mesa_numero = table.NUMMESA,
                                     mesa_imagen = table.IMAGEN,
                                     mesa_procesado = table.PROCESADO,
-                                    eleccion = _opcion
+                                    eleccion = _input.ElectionType
                                 });
                                 if (tableDetail.procesos.generalPre != null)
                                 {
@@ -240,7 +230,7 @@ namespace PE_Scrapping.Funciones
                                         habiles_numero = tableDetail.procesos.generalPre.presidencial.NNUME_HABILM,
                                         votantes_numero = tableDetail.procesos.generalPre.presidencial.TOT_CIUDADANOS_VOTARON,
                                         mesa_numero = table.NUMMESA,
-                                        eleccion = _opcion,
+                                        eleccion = _input.ElectionType,
                                         tipo_proceso = "PRE"
                                     });
                                     TVotos.AddRange(tableDetail.procesos.generalPre.votos.Select(v => new TVoto
@@ -250,7 +240,7 @@ namespace PE_Scrapping.Funciones
                                         auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
                                         lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
                                         votos_total = v.congresal,
-                                        eleccion = _opcion,
+                                        eleccion = _input.ElectionType,
                                         tipo_proceso = "PRE"
                                     }));
                                 }
@@ -263,7 +253,7 @@ namespace PE_Scrapping.Funciones
                                         habiles_numero = tableDetail.procesos.generalCon.congresal.NNUME_HABILM,
                                         votantes_numero = tableDetail.procesos.generalCon.congresal.TOT_CIUDADANOS_VOTARON,
                                         mesa_numero = table.NUMMESA,
-                                        eleccion = _opcion,
+                                        eleccion = _input.ElectionType,
                                         tipo_proceso = "CON"
                                     });
                                     TVotos.AddRange(tableDetail.procesos.generalCon.votos.Select(v => new TVoto
@@ -273,7 +263,7 @@ namespace PE_Scrapping.Funciones
                                         auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
                                         lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
                                         votos_total = v.congresal,
-                                        eleccion = _opcion,
+                                        eleccion = _input.ElectionType,
                                         tipo_proceso = "CON"
                                     }));
                                 }
@@ -286,7 +276,7 @@ namespace PE_Scrapping.Funciones
                                         habiles_numero = tableDetail.procesos.generalPar.parlamento.NNUME_HABILM,
                                         votantes_numero = tableDetail.procesos.generalPar.parlamento.TOT_CIUDADANOS_VOTARON,
                                         mesa_numero = table.NUMMESA,
-                                        eleccion = _opcion,
+                                        eleccion = _input.ElectionType,
                                         tipo_proceso = "PAR"
                                     });
                                     TVotos.AddRange(tableDetail.procesos.generalPar.votos.Select(v => new TVoto
@@ -296,7 +286,7 @@ namespace PE_Scrapping.Funciones
                                         auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
                                         lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
                                         votos_total = v.congresal,
-                                        eleccion = _opcion,
+                                        eleccion = _input.ElectionType,
                                         tipo_proceso = "PAR"
                                     }));
                                 }
@@ -322,7 +312,7 @@ namespace PE_Scrapping.Funciones
         }
         private static T ReadApiData<T>(string method)
         {
-            var json = HttpHandler.SendApiRequest(_endPointSet.BaseUri + method, _endPointSet.BodyTag);
+            var json = HttpHandler.SendApiRequest(_endPointSet.BaseUri + method).Result;
             var pObject = JsonToObject<T>(json);
             if (_config.SaveJson) GuardarJSON(json, pObject.GetType().Name);
             return pObject;
@@ -352,27 +342,27 @@ namespace PE_Scrapping.Funciones
             FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    DataConnection.PurgeAllData(_opcion);
+                    DataConnection.PurgeAllData(_input.ElectionType);
                 },
                 () =>
                 {
-                    return _tipo_proceso.Equals(Constants.ProcesoTotal);
+                    return _input.ProcessType.Equals(Constants.ProcesoTotal);
                 },
                 () =>
                 {
-                    DataConnection.PurgeUbigeoData(_opcion);
+                    DataConnection.PurgeUbigeoData(_input.ElectionType);
                     FunctionalHandler.ExecuteActionIf(
                         () =>
                         {
-                            DataConnection.PurgeDataByUbigeo(_opcion, _mesa_seleccion);
+                            DataConnection.PurgeDataByUbigeo(_input.ElectionType, _input.UbigeoCode);
                         },
                         () =>
                         {
-                            return _seleccion.Equals(Constants.ProcesoUbigeo);
+                            return _input.PartialType.Equals(Constants.ProcesoUbigeo);
                         },
                         () =>
                         {
-                            DataConnection.PurgeDataByTable(_opcion, _mesa_seleccion);
+                            DataConnection.PurgeDataByTable(_input.ElectionType, _input.TableNumber);
                         }
                     );
                 }
@@ -395,7 +385,7 @@ namespace PE_Scrapping.Funciones
                     ubigeo_padre = d.CDGO_PADRE,
                     nivel = 1,
                     ambito = d.CDGO_DEP.StartsWith("9") ? "E" : "P",
-                    eleccion = _opcion
+                    eleccion = _input.ElectionType
                 }).Concat(
                 TProvincias.Select(d =>
                 new TUbigeo
@@ -405,7 +395,7 @@ namespace PE_Scrapping.Funciones
                     ubigeo_padre = d.CDGO_PADRE,
                     nivel = 1,
                     ambito = d.CDGO_PROV.StartsWith("9") ? "E" : "P",
-                    eleccion = _opcion
+                    eleccion = _input.ElectionType
                 }).Concat(
                 TDistritos.Select(d =>
                 new TUbigeo
@@ -415,7 +405,7 @@ namespace PE_Scrapping.Funciones
                     ubigeo_padre = d.CDGO_PADRE,
                     nivel = 1,
                     ambito = d.CDGO_DIST.StartsWith("9") ? "E" : "P",
-                    eleccion = _opcion
+                    eleccion = _input.ElectionType
                 }))));
             TLocales = _locales.Select(l => new TLocal
             {
@@ -423,7 +413,7 @@ namespace PE_Scrapping.Funciones
                 local_direccion = l.TDIRE_LOCAL,
                 local_nombre = l.TNOMB_LOCAL,
                 local_ubigeo = l.CCODI_UBIGEO,
-                eleccion = _opcion
+                eleccion = _input.ElectionType
             }).ToList();
         }
         private static void DescargarActas(MesaDetalle mesaDetalle, MesasVotacion m, Locale l)
@@ -434,7 +424,7 @@ namespace PE_Scrapping.Funciones
                 {
                     if (mesaDetalle.procesos.generalPre != null)
                     {
-                        HttpHandler.DownloadFile(mesaDetalle.procesos.generalPre.imageActa,
+                        _ = HttpHandler.DownloadFile(mesaDetalle.procesos.generalPre.imageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
                             string.Concat("PRE-", m.NUMMESA, ".pdf"),
                                 Path.Combine(_config.SavePath, _endPointSet.Title, "ACTAS", _etq_base),
                                 FunctionalHandler.FormatFileName(l.TNOMB_LOCAL));
@@ -444,7 +434,7 @@ namespace PE_Scrapping.Funciones
                 {
                     if (mesaDetalle.procesos.generalCon != null)
                     {
-                        HttpHandler.DownloadFile(mesaDetalle.procesos.generalCon.imageActa,
+                        _ = HttpHandler.DownloadFile(mesaDetalle.procesos.generalCon.imageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
                             string.Concat("CON-", m.NUMMESA, ".pdf"), Path.Combine(_config.SavePath, "{0}"),
                                 Path.Combine(_etq_base, FunctionalHandler.FormatFileName(l.TNOMB_LOCAL)));
                     }
@@ -453,7 +443,7 @@ namespace PE_Scrapping.Funciones
                 {
                     if (mesaDetalle.procesos.generalPar != null)
                     {
-                        HttpHandler.DownloadFile(mesaDetalle.procesos.generalPar.imageActa,
+                        _ = HttpHandler.DownloadFile(mesaDetalle.procesos.generalPar.imageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
                             string.Concat("PAR-", m.NUMMESA, ".pdf"), Path.Combine(_config.SavePath, "{0}"),
                                 Path.Combine(_etq_base, FunctionalHandler.FormatFileName(l.TNOMB_LOCAL)));
                     }

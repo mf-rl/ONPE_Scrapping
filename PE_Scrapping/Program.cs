@@ -1,17 +1,16 @@
 ﻿using System;
-using PE_Scrapping.Funciones;
-using CommonFuntionalMethods;
 using PE_Scrapping.Screens;
+using PE_Scrapping.Funciones;
+using YPandar.Common.Functional;
+using PE_Scrapping.Entidades;
 
 namespace PE_Scrapping
 {
     internal static class Program
-    {
+    {        
         static void Main()
         {
-            string sel = string.Empty;
-            
-            string mesa_sel = string.Empty;
+            InputParameters input = new();
 
             Console.Title = Constants.APP_TITLE;
             FunctionalHandler.WriteLines(new string[]
@@ -20,63 +19,40 @@ namespace PE_Scrapping
                 Constants.APP_TITLE.PadLeft(41, ' ')
             });
 
-            string opt = new ElectionType().Show();
+            using (ElectionType screen = new()) { input.ElectionType = screen.Show(); }
+            using (ProcessType screen = new()) { input.ProcessType = screen.Show(); }            
 
-            string tip_pro = new ProcessType().Show();
-
             FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    sel = new PartialType().Show();
+                    using PartialType screen = new(); input.PartialType = screen.Show();
                 },
                 () =>
                 {
-                    return tip_pro.Equals(Constants.ProcesoParcial);
+                    return input.ProcessType.Equals(Constants.ProcesoParcial);
                 }
             );
             FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    FunctionalHandler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
-                    FunctionalHandler.RepeatActionIf(
-                        () =>
-                        {
-                            FunctionalHandler.WriteLines(new string[] { Messages.INPUT_TABLE_NUMBER });
-                            mesa_sel = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
-                        },
-                        () =>
-                        {
-                            return string.IsNullOrEmpty(mesa_sel);
-                        }
-                    );
+                    using TableNumber screen = new(); input.TableNumber = screen.Show();
                 },
                 () =>
                 {
-                    return sel.Equals(Constants.ProcesoMesa);
+                    return input.PartialType.Equals(Constants.ProcesoMesa);
                 }
             );
             FunctionalHandler.ExecuteActionIf(
                 () =>
                 {
-                    FunctionalHandler.WriteLines(new string[] { Messages.DOUBLE_LINE() });
-                    FunctionalHandler.RepeatActionIf(
-                        () =>
-                        {
-                            FunctionalHandler.WriteLines(new string[] { Messages.INPUT_UBIGEO_CODE });
-                            mesa_sel = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
-                        },
-                        () =>
-                        {
-                            return string.IsNullOrEmpty(mesa_sel) || mesa_sel.Trim().Length > 6;
-                        }
-                    );
+                    using UbigeoCode screen = new(); input.UbigeoCode = screen.Show();
                 },
                 () =>
                 {
-                    return sel.Equals(Constants.ProcesoUbigeo);
+                    return input.PartialType.Equals(Constants.ProcesoUbigeo);
                 }
             );
-            MainProcess.ExecuteProcess(opt, tip_pro, sel, mesa_sel);
+            MainProcess.ExecuteProcess(input);
             FunctionalHandler.WriteLines(new string[] {
                 Messages.PROCESS_FINISHED,
                 Messages.PRESS_ANY_KEY,

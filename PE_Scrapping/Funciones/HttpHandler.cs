@@ -1,59 +1,44 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using OpenQA.Selenium;
-using System.Threading;
-using CommonFuntionalMethods;
-using OpenQA.Selenium.Firefox;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace PE_Scrapping.Funciones
 {
     public static class HttpHandler
     {
-        static IWebDriver _driver;
         static string error_root = string.Empty;
-        public static void StartWebDriver(Action action, int MilisecondsWait)
-        {
-            FunctionalHandler.WriteLines(new string[] {
-                Messages.DOUBLE_LINE(),
-                Messages.INITIALIZING_DRIVER,
-                Messages.DOUBLE_LINE(),
-            });
 
-            FirefoxOptions options = new FirefoxOptions();
-            options.AddArgument("--headless");
-
-            _driver = new FirefoxDriver(options);
-            
-            _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMilliseconds(MilisecondsWait);
-            _driver.Manage().Window.Minimize();
-            FunctionalHandler.WriteLines(new string[]
-            {
-                Messages.DOUBLE_LINE(),
-                Messages.DRIVER_INITIATED,
-                Messages.DOUBLE_LINE(),
-            });
-            Thread.Sleep(5000);
-            action();
-            _driver.Close();
-        }
-        public static string SendApiRequest(string url, string tag)
+        public static async Task<string> SendApiRequest(string url) //, string tag)
         {
             bool success = false;
             string json = string.Empty;
             while (!success)
             {
-                try
+                using (HttpClient client = new())
                 {
-                    _driver.Navigate().GoToUrl(url);
-                    json = _driver.FindElement(By.TagName(tag)).Text;
-                    success = true;
+                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
+                    try
+                    {
+                        HttpResponseMessage response = await client.GetAsync(url);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            json = await response.Content.ReadAsStringAsync();
+                            success = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"HTTP request failed with status code: {response.StatusCode} for {url}");
+                        }
+
+                    }
+                    catch { /*Do nothing. Just retry if it fails */ }
                 }
-                catch { }
             }
             return json;
         }
-        public static void DownloadFile(string url_file, string save_file, string path, string folder)
+        public static async Task DownloadFile(string url_file, string save_file, string path, string folder)
         {
             bool result = Uri.TryCreate(url_file, UriKind.Absolute, out Uri uriResult)
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
@@ -65,15 +50,24 @@ namespace PE_Scrapping.Funciones
                     Directory.CreateDirectory(full_path);
                 }
                 full_path = Path.Combine(full_path, save_file);
-                using (var client = new WebClient())
+
+                using (HttpClient client = new())
                 {
+                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
                     bool success = false;
                     int intento = 0;
                     while (!success && intento <= 5)
                     {
                         try
                         {
-                            client.DownloadFile(url_file, full_path);
+                            HttpResponseMessage response = await client.GetAsync(url_file);
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                byte[] fileBytes = await response.Content.ReadAsByteArrayAsync();
+                                File.WriteAllBytes(full_path, fileBytes);
+                            }
+
                             success = true;
                         }
                         catch (Exception ex)

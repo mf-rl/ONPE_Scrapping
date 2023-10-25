@@ -10,6 +10,7 @@
         public bool SaveJson { get; set; }
         public bool SaveData { get; set; }
         public string JsonFileExtension { get; set; }
+        public string FilePath { get; set; }
     }
     public class Api
     {
@@ -25,7 +26,8 @@
         public string Locale { get; set; }
         public string Table { get; set; }
         public string TableDetail { get; set; }
-        public string BodyTag { get; set; }
+        public string Id { get; set; }
+        public string FileStorage { get; set; }
     }
     public class RequestParameters
     {

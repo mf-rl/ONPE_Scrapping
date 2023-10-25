@@ -7,7 +7,8 @@ namespace PE_Scrapping.Screens
     {
         public ElectionType()
         {
-            ScreenMessage = new string[]{
+            ScreenMessage = new string[]
+            {
                 Messages.DOUBLE_LINE(),
                 Messages.SELECT_PROCESS_INPUT,
                 Messages.FIRST_STAGE_OPTION,
@@ -16,6 +17,8 @@ namespace PE_Scrapping.Screens
                 Messages.SELECT_OPTION_AND_ENTER
             };
             PosibleInputs = new List<string>() { Constants.ProcesarPrimeraV, Constants.ProcesarSegundaV };
+            CheckInputs = ValidateInput;
         }
+        private bool ValidateInput() => !PosibleInputs.Exists(i => SelectedInput.Equals(i));
     }
 }

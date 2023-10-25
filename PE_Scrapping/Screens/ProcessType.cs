@@ -17,6 +17,8 @@ namespace PE_Scrapping.Screens
                 Messages.SELECT_OPTION_AND_ENTER
             };
             PosibleInputs = new List<string>() { Constants.ProcesoTotal, Constants.ProcesoParcial };
+            CheckInputs = ValidateInput;
         }
+        private bool ValidateInput() => !PosibleInputs.Exists(i => SelectedInput.Equals(i));
     }
 }

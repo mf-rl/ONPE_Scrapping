@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using CommonFuntionalMethods;
+using YPandar.Common.Functional;
 using PE_Scrapping.Funciones;
 
 namespace PE_Scrapping.Screens
 {
-    public class BaseScreen
+    public class BaseScreen : IDisposable
     {
+        private bool disposed = false;
         public string[] ScreenMessage { get; set; }
         public List<string> PosibleInputs { get; set; } = new List<string>();
-
-        string SelectedInput = string.Empty;
+        public string SelectedInput { get; set; } = string.Empty;
         public string Show()
         {
             FunctionalHandler.RepeatActionIf(
@@ -19,15 +18,30 @@ namespace PE_Scrapping.Screens
                 {
                     FunctionalHandler.WriteLines(ScreenMessage);
                     SelectedInput = FunctionalHandler.GetUserInput(Messages.WAIT_FOR_ANSWER);
-                },
-                () =>
-                {
-                    return !CheckInputs();
-                }
+                }, CheckInputs
             );
             return SelectedInput;
         }
+        
+        public Func<bool> CheckInputs { get; set; }
+                
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-        private bool CheckInputs() => PosibleInputs.Exists(i => SelectedInput.Equals(i));        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {                
+                disposed = true;
+            }
+        }
+                
+        ~BaseScreen()
+        {
+            Dispose(false);
+        }
     }
 }
