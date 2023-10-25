@@ -57,7 +57,7 @@ namespace PE_Scrapping.Funciones
                     });
                     ReadData();
                     if (_config.SaveData) SaveData();
-                }, _config.ChromeDriverPath, _config.MilisecondsWait
+                }, _config.MilisecondsWait
             );
         }
         public static void ReadData()

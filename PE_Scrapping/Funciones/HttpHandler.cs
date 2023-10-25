@@ -4,7 +4,7 @@ using System.Net;
 using OpenQA.Selenium;
 using System.Threading;
 using CommonFuntionalMethods;
-using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Firefox;
 
 namespace PE_Scrapping.Funciones
 {
@@ -12,15 +12,19 @@ namespace PE_Scrapping.Funciones
     {
         static IWebDriver _driver;
         static string error_root = string.Empty;
-        public static void StartWebDriver(Action action, string ChromeDriverPath, int MilisecondsWait)
+        public static void StartWebDriver(Action action, int MilisecondsWait)
         {
             FunctionalHandler.WriteLines(new string[] {
                 Messages.DOUBLE_LINE(),
                 Messages.INITIALIZING_DRIVER,
                 Messages.DOUBLE_LINE(),
             });
-            ChromeOptions options = new ChromeOptions { Proxy = null };
-            _driver = new ChromeDriver(ChromeDriverPath, options);
+
+            FirefoxOptions options = new FirefoxOptions();
+            options.AddArgument("--headless");
+
+            _driver = new FirefoxDriver(options);
+            
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMilliseconds(MilisecondsWait);
             _driver.Manage().Window.Minimize();
             FunctionalHandler.WriteLines(new string[]
