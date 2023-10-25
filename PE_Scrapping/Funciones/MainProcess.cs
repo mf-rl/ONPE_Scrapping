@@ -25,15 +25,15 @@ namespace PE_Scrapping.Funciones
         static List<Province> TProvincias = new();
         static List<Department> TDepartamentos = new();
 
-        static List<TUbigeo> TUbigeos = new();
+        static readonly List<TUbigeo> TUbigeos = new();
         static List<TLocal> TLocales = new();
-        static List<TMesa> TMesas = new();
-        static List<TActa> TActas = new();
-        static List<TVoto> TVotos = new();
+        static readonly List<TMesa> TMesas = new();
+        static readonly List<TActa> TActas = new();
+        static readonly List<TVoto> TVotos = new();
         
-        static List<Locale> _locales = new();
-        static List<MesasVotacion> _mesas = new();
-        static List<MesaDetalle> _mesaDetalles = new();
+        static readonly List<Locale> _locales = new();
+        static readonly List<MesasVotacion> _mesas = new();
+        static readonly List<MesaDetalle> _mesaDetalles = new();
 
         public static void ExecuteProcess(InputParameters input)
         {
@@ -144,7 +144,7 @@ namespace PE_Scrapping.Funciones
             FunctionalHandler.ExecuteActionIf(
                 ()  =>
                 {
-                    Func<string> checkDistrict = () => _input.UbigeoCode.EndsWith("00") ? _input.UbigeoCode.Substring(0, 4) : _input.UbigeoCode;
+                    static string checkDistrict() => _input.UbigeoCode.EndsWith("00") ? _input.UbigeoCode.Substring(0, 4) : _input.UbigeoCode;
 
                     _input.UbigeoCode = _input.UbigeoCode.EndsWith("0000") ? _input.UbigeoCode.Substring(0, 2) : checkDistrict();
 
