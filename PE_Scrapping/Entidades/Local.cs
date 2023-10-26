@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace PE_Scrapping.Entidades
 {
     public class Local
     {
-        public List<Locale> locales { get; set; }
+        [JsonProperty("locales")]
+        public List<Locale> Locales { get; set; }
     }
     public class Locale
     {

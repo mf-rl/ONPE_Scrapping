@@ -2,12 +2,12 @@
 {
     public class TVoto
 	{
-		public string mesa_numero { get; set; }
-		public string acta_numero { get; set; }
-		public string auto_nombre { get; set; }
-		public string lista_numero { get; set; }
-		public string votos_total { get; set; }
-		public string eleccion { get; set; }
-		public string tipo_proceso { get; set; }
+		public string Mesa_numero { get; set; }
+		public string Acta_numero { get; set; }
+		public string Auto_nombre { get; set; }
+		public string Lista_numero { get; set; }
+		public string Votos_total { get; set; }
+		public string Eleccion { get; set; }
+		public string Tipo_proceso { get; set; }
 	}
 }

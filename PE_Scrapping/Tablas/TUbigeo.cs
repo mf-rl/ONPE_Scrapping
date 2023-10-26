@@ -2,11 +2,11 @@
 {
     public class TUbigeo
     {
-		public string ubigeo_codigo { get; set; }
-		public string ubigeo_descripcion { get; set; }
-		public string ubigeo_padre { get; set; }
-		public string eleccion { get; set; }
-		public int nivel { get; set; }
-		public string ambito { get; set; }
+		public string Ubigeo_codigo { get; set; }
+		public string Ubigeo_descripcion { get; set; }
+		public string Ubigeo_padre { get; set; }
+		public string Eleccion { get; set; }
+		public int Nivel { get; set; }
+		public string Ambito { get; set; }
 	}
 }

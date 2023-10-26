@@ -47,5 +47,5 @@ create table pe_Votos (
 	votos_total TEXT,
 	eleccion char(1),
 	tipo_proceso char(3),
-	PRIMARY KEY(mesa_numero, acta_numero, auto_nombre, tipo_proceso, eleccion)
+	PRIMARY KEY(mesa_numero, acta_numero, auto_nombre, lista_numero, tipo_proceso, eleccion)
 )

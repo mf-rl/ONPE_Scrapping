@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace PE_Scrapping.Entidades
 {
     public class Mesa
     {
-        public List<MesasVotacion> mesasVotacion { get; set; }
+        [JsonProperty("mesasVotacion")]
+        public List<MesasVotacion> MesasVotacion { get; set; }
     }
     public class MesasVotacion
     {

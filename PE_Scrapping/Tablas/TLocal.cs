@@ -2,10 +2,10 @@
 {
     public class TLocal
     {
-        public string local_codigo { get; set; }
-        public string local_ubigeo { get; set; }
-        public string local_nombre { get; set; }
-        public string local_direccion { get; set; }
-        public string eleccion { get; set; }
+        public string Local_codigo { get; set; }
+        public string Local_ubigeo { get; set; }
+        public string Local_nombre { get; set; }
+        public string Local_direccion { get; set; }
+        public string Eleccion { get; set; }
     }
 }

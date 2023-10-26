@@ -1,28 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace PE_Scrapping.Entidades
 {
     public class Ubigeo
     {
-        public Ubigeos ubigeos { get; set; }
+        [JsonProperty("ubigeos")]
+        public Ubigeos Ubigeos { get; set; }
     }
     public class Ubigeos
     {
-        public Nacional nacional { get; set; }
-        public Extranjero extranjero { get; set; }
+        [JsonProperty("nacional")]
+        public Nacional Nacional { get; set; }
+        [JsonProperty("extranjero")]
+        public Extranjero Extranjero { get; set; }
     }
     public class Nacional
     {
-        public List<Department> departments { get; set; }
-        public List<Province> provinces { get; set; }
-        public List<District> districts { get; set; }
+        [JsonProperty("departments")]
+        public List<Department> Departments { get; set; }
+        [JsonProperty("provinces")]
+        public List<Province> Provinces { get; set; }
+        [JsonProperty("districts")]
+        public List<District> Districts { get; set; }
     }
 
     public class Extranjero
     {
-        public List<Department> continents { get; set; }
-        public List<Province> countries { get; set; }
-        public List<District> states { get; set; }
+        [JsonProperty("continents")]
+        public List<Department> Continents { get; set; }
+        [JsonProperty("countries")]
+        public List<Province> Countries { get; set; }
+        [JsonProperty("states")]
+        public List<District> States { get; set; }
     }
     public class Department
     {

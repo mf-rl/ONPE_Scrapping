@@ -85,9 +85,9 @@ namespace PE_Scrapping.Funciones
         private static void ReadUbigeoData()
         {
             var _ubigeos = ReadApiData<Ubigeo>(_endPointSet.Ubigeo);
-            TDistritos = _ubigeos.ubigeos.nacional.districts.Concat(_ubigeos.ubigeos.extranjero.states).OrderBy(o => o.CDGO_DIST).ToList();
-            TProvincias = _ubigeos.ubigeos.nacional.provinces.Concat(_ubigeos.ubigeos.extranjero.countries).OrderBy(o => o.CDGO_PROV).ToList();
-            TDepartamentos = _ubigeos.ubigeos.nacional.departments.Concat(_ubigeos.ubigeos.extranjero.continents).OrderBy(o => o.CDGO_DEP).ToList();
+            TDistritos = _ubigeos.Ubigeos.Nacional.Districts.Concat(_ubigeos.Ubigeos.Extranjero.States).OrderBy(o => o.CDGO_DIST).ToList();
+            TProvincias = _ubigeos.Ubigeos.Nacional.Provinces.Concat(_ubigeos.Ubigeos.Extranjero.Countries).OrderBy(o => o.CDGO_PROV).ToList();
+            TDepartamentos = _ubigeos.Ubigeos.Nacional.Departments.Concat(_ubigeos.Ubigeos.Extranjero.Continents).OrderBy(o => o.CDGO_DEP).ToList();
         }
         private static void ReadElectionData()
         {
@@ -104,8 +104,8 @@ namespace PE_Scrapping.Funciones
                 });
                 _appendName = string.Empty;
                 Local locales = ReadApiData<Local>(_endPointSet.Locale.Replace(_config.Api.RequestParameters.UbigeoCode, d.CDGO_DIST));
-                _locales.AddRange(locales.locales);
-                locales.locales.ForEach(l =>
+                _locales.AddRange(locales.Locales);
+                locales.Locales.ForEach(l =>
                 {
                     FunctionalHandler.WriteLines(new string[]
                     {
@@ -113,12 +113,13 @@ namespace PE_Scrapping.Funciones
                     });
                     _appendName = FunctionalHandler.FormatFileName(l.TNOMB_LOCAL);
                     Mesa mesas = ReadApiData<Mesa>(_endPointSet.Table.Replace(_config.Api.RequestParameters.UbigeoCode, d.CDGO_DIST).Replace(_config.Api.RequestParameters.LocaleCode, l.CCODI_LOCAL));
-                    _mesas.AddRange(mesas.mesasVotacion);
+                    _mesas.AddRange(mesas.MesasVotacion);
                     
-                    mesas.mesasVotacion.ForEach(m =>
+                    mesas.MesasVotacion.ForEach(m =>
                     {
-                        TMesas.Add(new TMesa { 
-                            local_codigo = l.CCODI_LOCAL, local_ubigeo = l.CCODI_UBIGEO, mesa_numero = m.NUMMESA, mesa_imagen = m.IMAGEN, mesa_procesado = m.PROCESADO, eleccion = _input.ElectionType
+                        TMesas.Add(new TMesa {
+                            Local_codigo = l.CCODI_LOCAL, Local_ubigeo = l.CCODI_UBIGEO, Mesa_numero = m.NUMMESA, Mesa_imagen = m.IMAGEN, Mesa_procesado = m.PROCESADO,
+                            Eleccion = _input.ElectionType
                         });
                         FunctionalHandler.WriteLines(new string[]
                         {
@@ -197,15 +198,15 @@ namespace PE_Scrapping.Funciones
                         string.Format(Messages.READING, string.Format(Messages.TABLE_NUMBER, _input.TableNumber))
                     });
                     _mesaDetalles.Add(tableDetail);
-                    ReadApiData<Local>(_endPointSet.Locale.Replace(_config.Api.RequestParameters.UbigeoCode, tableDetail.procesos.generalPre.presidencial.CCODI_UBIGEO))
-                    .locales.ForEach(l => {
+                    ReadApiData<Local>(_endPointSet.Locale.Replace(_config.Api.RequestParameters.UbigeoCode, tableDetail.Procesos.GeneralPre.Presidencial.CCODI_UBIGEO))
+                    .Locales.ForEach(l => {
                         if (!_mesas.Any())
                         {
                             MesasVotacion table = ReadApiData<Mesa>(
                                 _endPointSet.Table
-                                    .Replace(_config.Api.RequestParameters.UbigeoCode, tableDetail.procesos.generalPre.presidencial.CCODI_UBIGEO)
+                                    .Replace(_config.Api.RequestParameters.UbigeoCode, tableDetail.Procesos.GeneralPre.Presidencial.CCODI_UBIGEO)
                                     .Replace(_config.Api.RequestParameters.LocaleCode, l.CCODI_LOCAL)
-                                ).mesasVotacion.Find(m => m.NUMMESA.Equals(_input.TableNumber));
+                                ).MesasVotacion.Find(m => m.NUMMESA.Equals(_input.TableNumber));
                             if (table != null)
                             {
                                 _mesas.Add(table);
@@ -215,80 +216,80 @@ namespace PE_Scrapping.Funciones
 
                                 TMesas.Add(new TMesa
                                 {
-                                    local_codigo = l.CCODI_LOCAL,
-                                    local_ubigeo = l.CCODI_UBIGEO,
-                                    mesa_numero = table.NUMMESA,
-                                    mesa_imagen = table.IMAGEN,
-                                    mesa_procesado = table.PROCESADO,
-                                    eleccion = _input.ElectionType
+                                    Local_codigo = l.CCODI_LOCAL,
+                                    Local_ubigeo = l.CCODI_UBIGEO,
+                                    Mesa_numero = table.NUMMESA,
+                                    Mesa_imagen = table.IMAGEN,
+                                    Mesa_procesado = table.PROCESADO,
+                                    Eleccion = _input.ElectionType
                                 });
-                                if (tableDetail.procesos.generalPre != null)
+                                if (tableDetail.Procesos.GeneralPre != null)
                                 {
                                     TActas.Add(new TActa
                                     {
-                                        acta_imagen = tableDetail.procesos.generalPre.imageActa,
-                                        acta_numero = tableDetail.procesos.generalPre.presidencial.CCOPIA_ACTA,
-                                        habiles_numero = tableDetail.procesos.generalPre.presidencial.NNUME_HABILM,
-                                        votantes_numero = tableDetail.procesos.generalPre.presidencial.TOT_CIUDADANOS_VOTARON,
-                                        mesa_numero = table.NUMMESA,
-                                        eleccion = _input.ElectionType,
-                                        tipo_proceso = "PRE"
+                                        Acta_imagen = tableDetail.Procesos.GeneralPre.ImageActa,
+                                        Acta_numero = tableDetail.Procesos.GeneralPre.Presidencial.CCOPIA_ACTA,
+                                        Habiles_numero = tableDetail.Procesos.GeneralPre.Presidencial.NNUME_HABILM,
+                                        Votantes_numero = tableDetail.Procesos.GeneralPre.Presidencial.TOT_CIUDADANOS_VOTARON,
+                                        Mesa_numero = table.NUMMESA,
+                                        Eleccion = _input.ElectionType,
+                                        Tipo_proceso = "PRE"
                                     });
-                                    TVotos.AddRange(tableDetail.procesos.generalPre.votos.Select(v => new TVoto
+                                    TVotos.AddRange(tableDetail.Procesos.GeneralPre.Votos.Select(v => new TVoto
                                     {
-                                        mesa_numero = table.NUMMESA,
-                                        acta_numero = tableDetail.procesos.generalPre.presidencial.CCOPIA_ACTA,
-                                        auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
-                                        lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
-                                        votos_total = v.congresal,
-                                        eleccion = _input.ElectionType,
-                                        tipo_proceso = "PRE"
+                                        Mesa_numero = table.NUMMESA,
+                                        Acta_numero = tableDetail.Procesos.GeneralPre.Presidencial.CCOPIA_ACTA,
+                                        Auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
+                                        Lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
+                                        Votos_total = v.Congresal,
+                                        Eleccion = _input.ElectionType,
+                                        Tipo_proceso = "PRE"
                                     }));
                                 }
-                                if (tableDetail.procesos.generalCon != null)
+                                if (tableDetail.Procesos.GeneralCon != null)
                                 {
                                     TActas.Add(new TActa
                                     {
-                                        acta_imagen = tableDetail.procesos.generalCon.imageActa,
-                                        acta_numero = tableDetail.procesos.generalCon.congresal.CCOPIA_ACTA,
-                                        habiles_numero = tableDetail.procesos.generalCon.congresal.NNUME_HABILM,
-                                        votantes_numero = tableDetail.procesos.generalCon.congresal.TOT_CIUDADANOS_VOTARON,
-                                        mesa_numero = table.NUMMESA,
-                                        eleccion = _input.ElectionType,
-                                        tipo_proceso = "CON"
+                                        Acta_imagen = tableDetail.Procesos.GeneralCon.ImageActa,
+                                        Acta_numero = tableDetail.Procesos.GeneralCon.Congresal.CCOPIA_ACTA,
+                                        Habiles_numero = tableDetail.Procesos.GeneralCon.Congresal.NNUME_HABILM,
+                                        Votantes_numero = tableDetail.Procesos.GeneralCon.Congresal.TOT_CIUDADANOS_VOTARON,
+                                        Mesa_numero = table.NUMMESA,
+                                        Eleccion = _input.ElectionType,
+                                        Tipo_proceso = "CON"
                                     });
-                                    TVotos.AddRange(tableDetail.procesos.generalCon.votos.Select(v => new TVoto
+                                    TVotos.AddRange(tableDetail.Procesos.GeneralCon.Votos.Select(v => new TVoto
                                     {
-                                        mesa_numero = table.NUMMESA,
-                                        acta_numero = tableDetail.procesos.generalCon.congresal.CCOPIA_ACTA,
-                                        auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
-                                        lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
-                                        votos_total = v.congresal,
-                                        eleccion = _input.ElectionType,
-                                        tipo_proceso = "CON"
+                                        Mesa_numero = table.NUMMESA,
+                                        Acta_numero = tableDetail.Procesos.GeneralCon.Congresal.CCOPIA_ACTA,
+                                        Auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
+                                        Lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
+                                        Votos_total = v.Congresal,
+                                        Eleccion = _input.ElectionType,
+                                        Tipo_proceso = "CON"
                                     }));
                                 }
-                                if (tableDetail.procesos.generalPar != null)
+                                if (tableDetail.Procesos.GeneralPar != null)
                                 {
                                     TActas.Add(new TActa
                                     {
-                                        acta_imagen = tableDetail.procesos.generalPar.imageActa,
-                                        acta_numero = tableDetail.procesos.generalPar.parlamento.CCOPIA_ACTA,
-                                        habiles_numero = tableDetail.procesos.generalPar.parlamento.NNUME_HABILM,
-                                        votantes_numero = tableDetail.procesos.generalPar.parlamento.TOT_CIUDADANOS_VOTARON,
-                                        mesa_numero = table.NUMMESA,
-                                        eleccion = _input.ElectionType,
-                                        tipo_proceso = "PAR"
+                                        Acta_imagen = tableDetail.Procesos.GeneralPar.ImageActa,
+                                        Acta_numero = tableDetail.Procesos.GeneralPar.Parlamento.CCOPIA_ACTA,
+                                        Habiles_numero = tableDetail.Procesos.GeneralPar.Parlamento.NNUME_HABILM,
+                                        Votantes_numero = tableDetail.Procesos.GeneralPar.Parlamento.TOT_CIUDADANOS_VOTARON,
+                                        Mesa_numero = table.NUMMESA,
+                                        Eleccion = _input.ElectionType,
+                                        Tipo_proceso = "PAR"
                                     });
-                                    TVotos.AddRange(tableDetail.procesos.generalPar.votos.Select(v => new TVoto
+                                    TVotos.AddRange(tableDetail.Procesos.GeneralPar.Votos.Select(v => new TVoto
                                     {
-                                        mesa_numero = table.NUMMESA,
-                                        acta_numero = tableDetail.procesos.generalPar.parlamento.CCOPIA_ACTA,
-                                        auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
-                                        lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
-                                        votos_total = v.congresal,
-                                        eleccion = _input.ElectionType,
-                                        tipo_proceso = "PAR"
+                                        Mesa_numero = table.NUMMESA,
+                                        Acta_numero = tableDetail.Procesos.GeneralPar.Parlamento.CCOPIA_ACTA,
+                                        Auto_nombre = string.IsNullOrEmpty(v.AUTORIDAD) ? string.Empty : v.AUTORIDAD,
+                                        Lista_numero = string.IsNullOrEmpty(v.NLISTA) ? string.Empty : v.NLISTA,
+                                        Votos_total = v.Congresal,
+                                        Eleccion = _input.ElectionType,
+                                        Tipo_proceso = "PAR"
                                     }));
                                 }
                             }
@@ -381,40 +382,40 @@ namespace PE_Scrapping.Funciones
                 TDepartamentos.Select(d =>
                 new TUbigeo
                 {
-                    ubigeo_codigo = d.CDGO_DEP,
-                    ubigeo_descripcion = d.DESC_DEP,
-                    ubigeo_padre = d.CDGO_PADRE,
-                    nivel = 1,
-                    ambito = d.CDGO_DEP.StartsWith('9') ? "E" : "P",
-                    eleccion = _input.ElectionType
+                    Ubigeo_codigo = d.CDGO_DEP,
+                    Ubigeo_descripcion = d.DESC_DEP,
+                    Ubigeo_padre = d.CDGO_PADRE,
+                    Nivel = 1,
+                    Ambito = d.CDGO_DEP.StartsWith('9') ? "E" : "P",
+                    Eleccion = _input.ElectionType
                 }).Concat(
                 TProvincias.Select(d =>
                 new TUbigeo
                 {
-                    ubigeo_codigo = d.CDGO_PROV,
-                    ubigeo_descripcion = d.DESC_PROV,
-                    ubigeo_padre = d.CDGO_PADRE,
-                    nivel = 1,
-                    ambito = d.CDGO_PROV.StartsWith('9') ? "E" : "P",
-                    eleccion = _input.ElectionType
+                    Ubigeo_codigo = d.CDGO_PROV,
+                    Ubigeo_descripcion = d.DESC_PROV,
+                    Ubigeo_padre = d.CDGO_PADRE,
+                    Nivel = 1,
+                    Ambito = d.CDGO_PROV.StartsWith('9') ? "E" : "P",
+                    Eleccion = _input.ElectionType
                 }).Concat(
                 TDistritos.Select(d =>
                 new TUbigeo
                 {
-                    ubigeo_codigo = d.CDGO_DIST,
-                    ubigeo_descripcion = d.DESC_DIST,
-                    ubigeo_padre = d.CDGO_PADRE,
-                    nivel = 1,
-                    ambito = d.CDGO_DIST.StartsWith('9') ? "E" : "P",
-                    eleccion = _input.ElectionType
+                    Ubigeo_codigo = d.CDGO_DIST,
+                    Ubigeo_descripcion = d.DESC_DIST,
+                    Ubigeo_padre = d.CDGO_PADRE,
+                    Nivel = 1,
+                    Ambito = d.CDGO_DIST.StartsWith('9') ? "E" : "P",
+                    Eleccion = _input.ElectionType
                 }))));
             TLocales = _locales.Select(l => new TLocal
             {
-                local_codigo = l.CCODI_LOCAL,
-                local_direccion = l.TDIRE_LOCAL,
-                local_nombre = l.TNOMB_LOCAL,
-                local_ubigeo = l.CCODI_UBIGEO,
-                eleccion = _input.ElectionType
+                Local_codigo = l.CCODI_LOCAL,
+                Local_direccion = l.TDIRE_LOCAL,
+                Local_nombre = l.TNOMB_LOCAL,
+                Local_ubigeo = l.CCODI_UBIGEO,
+                Eleccion = _input.ElectionType
             }).ToList();
         }
         private static void DescargarActas(MesaDetalle mesaDetalle, MesasVotacion m, Locale l)
@@ -423,9 +424,9 @@ namespace PE_Scrapping.Funciones
             {
                 () =>
                 {
-                    if (mesaDetalle.procesos.generalPre != null)
+                    if (mesaDetalle.Procesos.GeneralPre != null)
                     {
-                        _ = HttpHandler.DownloadFile(mesaDetalle.procesos.generalPre.imageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
+                        _ = HttpHandler.DownloadFile(mesaDetalle.Procesos.GeneralPre.ImageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
                             string.Concat("PRE-", m.NUMMESA, ".pdf"),
                                 Path.Combine(_config.SavePath, _endPointSet.Title, "ACTAS", _etq_base),
                                 FunctionalHandler.FormatFileName(l.TNOMB_LOCAL));
@@ -433,18 +434,18 @@ namespace PE_Scrapping.Funciones
                 },
                 () =>
                 {
-                    if (mesaDetalle.procesos.generalCon != null)
+                    if (mesaDetalle.Procesos.GeneralCon != null)
                     {
-                        _ = HttpHandler.DownloadFile(mesaDetalle.procesos.generalCon.imageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
+                        _ = HttpHandler.DownloadFile(mesaDetalle.Procesos.GeneralCon.ImageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
                             string.Concat("CON-", m.NUMMESA, ".pdf"), Path.Combine(_config.SavePath, "{0}"),
                                 Path.Combine(_etq_base, FunctionalHandler.FormatFileName(l.TNOMB_LOCAL)));
                     }
                 },
                 () =>
                 {
-                    if (mesaDetalle.procesos.generalPar != null)
+                    if (mesaDetalle.Procesos.GeneralPar != null)
                     {
-                        _ = HttpHandler.DownloadFile(mesaDetalle.procesos.generalPar.imageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
+                        _ = HttpHandler.DownloadFile(mesaDetalle.Procesos.GeneralPar.ImageActa.Replace(string.Format("{0}-actas-resultados-prod.s3.amazonaws.com", _endPointSet.FileStorage), string.Format(_config.FilePath, _endPointSet.Id)),
                             string.Concat("PAR-", m.NUMMESA, ".pdf"), Path.Combine(_config.SavePath, "{0}"),
                                 Path.Combine(_etq_base, FunctionalHandler.FormatFileName(l.TNOMB_LOCAL)));
                     }
