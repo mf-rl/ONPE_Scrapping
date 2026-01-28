@@ -96,110 +96,12 @@ namespace PE_Scrapping.Funciones
                 await context.CloseAsync();
             }
         }
-        //    public static async Task DownloadFile(
-        //string url_file,
-        //string save_file,
-        //string path,
-        //string folder)
-        //    {
-        //        if (!Uri.TryCreate(url_file, UriKind.Absolute, out var uri))
-        //            return;
-
-        //        string fullPath = Path.Combine(string.Format(path, "ACTAS"), folder);
-        //        Directory.CreateDirectory(fullPath);
-        //        fullPath = Path.Combine(fullPath, save_file);
-
-        //        if (File.Exists(fullPath))
-        //        {
-        //            Console.WriteLine($"✓ File already exists: {save_file}");
-        //            return;
-        //        }
-
-        //        using var handler = new HttpClientHandler
-        //        {
-        //            AutomaticDecompression = System.Net.DecompressionMethods.All
-        //        };
-
-        //        using var client = new HttpClient(handler);
-
-        //        // 🔑 These headers are CRITICAL
-        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
-        //            "User-Agent",
-        //            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
-        //        );
-        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
-        //            "Accept",
-        //            "application/pdf,*/*"
-        //        );
-        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
-        //            "Accept-Language",
-        //            "es-PE,es;q=0.9"
-        //        );
-        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
-        //            "Referer",
-        //            "https://resultadoshistorico.onpe.gob.pe/"
-        //        );
-        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
-        //            "Sec-Fetch-Dest",
-        //            "empty"
-        //        );
-        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
-        //            "Sec-Fetch-Mode",
-        //            "no-cors"
-        //        );
-
-        //        int intento = 0;
-        //        while (intento < 5)
-        //        {
-        //            try
-        //            {
-        //                using var response = await client.GetAsync(
-        //                    uri,
-        //                    HttpCompletionOption.ResponseHeadersRead
-        //                );
-
-        //                if (!response.IsSuccessStatusCode)
-        //                    throw new HttpRequestException($"HTTP {(int)response.StatusCode}");
-
-        //                await using var fs = new FileStream(
-        //                    fullPath,
-        //                    FileMode.Create,
-        //                    FileAccess.Write,
-        //                    FileShare.None
-        //                );
-
-        //                await response.Content.CopyToAsync(fs);
-
-        //                Console.WriteLine($"✓ Downloaded {save_file}");
-        //                return;
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                intento++;
-        //                Console.WriteLine($"✗ Error downloading {save_file}: {ex.Message}");
-
-        //                if (intento >= 5)
-        //                {
-        //                    ErrorLog($"No se pudo descargar acta: {save_file}", path);
-        //                    return;
-        //                }
-
-        //                await Task.Delay(intento * 2000); // backoff
-        //            }
-        //        }
-        //    }
-        private static string GetOrigin(string url)
-        {
-            var uri = new Uri(url);
-            return $"{uri.Scheme}://{uri.Host}";
-        }
-
 
         public static async Task DownloadFile(
-    string urlFile,
-    string saveFile,
-    string path,
-    string folder)
+            string urlFile,
+            string saveFile,
+            string path,
+            string folder)
         {
             var context = await _browser!.NewContextAsync(new BrowserNewContextOptions
             {
