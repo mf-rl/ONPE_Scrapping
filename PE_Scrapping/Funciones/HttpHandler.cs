@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Microsoft.Playwright;
+using PE_Scrapping.Entidades;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Playwright;
 
 namespace PE_Scrapping.Funciones
 {
@@ -54,7 +55,7 @@ namespace PE_Scrapping.Funciones
             
             try
             {
-                Console.WriteLine($"Fetching {url} using Playwright...");
+                //Console.WriteLine($"Fetching {url} using Playwright...");
                 
                 // Navigate to the URL
                 await page.GotoAsync(url, new PageGotoOptions
@@ -73,7 +74,7 @@ namespace PE_Scrapping.Funciones
                     var json = await preElement.TextContentAsync();
                     if (!string.IsNullOrWhiteSpace(json) && (json.TrimStart().StartsWith("{") || json.TrimStart().StartsWith("[")))
                     {
-                        Console.WriteLine($"✓ Successfully fetched data ({json.Length} bytes)");
+                        //Console.WriteLine($"✓ Successfully fetched data ({json.Length} bytes)");
                         return json;
                     }
                 }
@@ -95,57 +96,178 @@ namespace PE_Scrapping.Funciones
                 await context.CloseAsync();
             }
         }
-        public static async Task DownloadFile(string url_file, string save_file, string path, string folder)
+        //    public static async Task DownloadFile(
+        //string url_file,
+        //string save_file,
+        //string path,
+        //string folder)
+        //    {
+        //        if (!Uri.TryCreate(url_file, UriKind.Absolute, out var uri))
+        //            return;
+
+        //        string fullPath = Path.Combine(string.Format(path, "ACTAS"), folder);
+        //        Directory.CreateDirectory(fullPath);
+        //        fullPath = Path.Combine(fullPath, save_file);
+
+        //        if (File.Exists(fullPath))
+        //        {
+        //            Console.WriteLine($"✓ File already exists: {save_file}");
+        //            return;
+        //        }
+
+        //        using var handler = new HttpClientHandler
+        //        {
+        //            AutomaticDecompression = System.Net.DecompressionMethods.All
+        //        };
+
+        //        using var client = new HttpClient(handler);
+
+        //        // 🔑 These headers are CRITICAL
+        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
+        //            "User-Agent",
+        //            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+        //        );
+        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
+        //            "Accept",
+        //            "application/pdf,*/*"
+        //        );
+        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
+        //            "Accept-Language",
+        //            "es-PE,es;q=0.9"
+        //        );
+        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
+        //            "Referer",
+        //            "https://resultadoshistorico.onpe.gob.pe/"
+        //        );
+        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
+        //            "Sec-Fetch-Dest",
+        //            "empty"
+        //        );
+        //        client.DefaultRequestHeaders.TryAddWithoutValidation(
+        //            "Sec-Fetch-Mode",
+        //            "no-cors"
+        //        );
+
+        //        int intento = 0;
+        //        while (intento < 5)
+        //        {
+        //            try
+        //            {
+        //                using var response = await client.GetAsync(
+        //                    uri,
+        //                    HttpCompletionOption.ResponseHeadersRead
+        //                );
+
+        //                if (!response.IsSuccessStatusCode)
+        //                    throw new HttpRequestException($"HTTP {(int)response.StatusCode}");
+
+        //                await using var fs = new FileStream(
+        //                    fullPath,
+        //                    FileMode.Create,
+        //                    FileAccess.Write,
+        //                    FileShare.None
+        //                );
+
+        //                await response.Content.CopyToAsync(fs);
+
+        //                Console.WriteLine($"✓ Downloaded {save_file}");
+        //                return;
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                intento++;
+        //                Console.WriteLine($"✗ Error downloading {save_file}: {ex.Message}");
+
+        //                if (intento >= 5)
+        //                {
+        //                    ErrorLog($"No se pudo descargar acta: {save_file}", path);
+        //                    return;
+        //                }
+
+        //                await Task.Delay(intento * 2000); // backoff
+        //            }
+        //        }
+        //    }
+        private static string GetOrigin(string url)
         {
-            bool result = Uri.TryCreate(url_file, UriKind.Absolute, out Uri uriResult)
-                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-            if (result)
+            var uri = new Uri(url);
+            return $"{uri.Scheme}://{uri.Host}";
+        }
+
+
+        public static async Task DownloadFile(
+    string urlFile,
+    string saveFile,
+    string path,
+    string folder)
+        {
+            var context = await _browser!.NewContextAsync(new BrowserNewContextOptions
             {
-                string full_path = Path.Combine(string.Format(path, "ACTAS"), folder);
-                if (!Directory.Exists(full_path))
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                Locale = "es-PE",
+                TimezoneId = "America/Lima",
+                AcceptDownloads = true
+            });
+
+            var page = await context.NewPageAsync();
+
+            try
+            {
+                if (!Uri.TryCreate(urlFile, UriKind.Absolute, out var pdfUri))
+                    return;
+
+                string fullPath = Path.Combine(string.Format(path, "ACTAS"), folder);
+                Directory.CreateDirectory(fullPath);
+                fullPath = Path.Combine(fullPath, saveFile);
+
+                if (File.Exists(fullPath))
                 {
-                    Directory.CreateDirectory(full_path);
+                    Console.WriteLine($"✓ Exists: {saveFile}");
+                    return;
                 }
-                full_path = Path.Combine(full_path, save_file);
 
-                using HttpClient client = new();
-                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
-                bool success = false;
-                int intento = 0;
-                while (!success && intento <= 5)
+                string origin = $"{pdfUri.Scheme}://{pdfUri.Host}";
+
+                await page.GotoAsync(
+                    origin,
+                    new PageGotoOptions
+                    {
+                        WaitUntil = WaitUntilState.DOMContentLoaded,
+                        Timeout = 30000
+                    });
+
+                var download = await page.RunAndWaitForDownloadAsync(async () =>
                 {
-                    try
-                    {
-                        HttpResponseMessage response = await client.GetAsync(url_file);
+                    await page.EvaluateAsync(
+                        @"url => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.target = '_blank';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }",
+                        urlFile
+                    );
+                });
 
-                        if (response.IsSuccessStatusCode)
-                        {
-                            byte[] fileBytes = await response.Content.ReadAsByteArrayAsync();
-                            File.WriteAllBytes(full_path, fileBytes);
-                        }
+                await download.SaveAsAsync(fullPath);
 
-                        success = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        ErrorLog(string.Concat("Error descargando acta.: ", full_path), path);
-                        ErrorLog(ex.Message, path);
-                        Console.WriteLine("Error de conexión al intentar descargar acta. Reintentando...");
-                        intento++;
-                        if (intento < 5)
-                        {
-                            Console.WriteLine("Reintentando...");
-                        }
-                        else
-                        {
-                            ErrorLog("No se pudo descargar acta luego de 5 intentos.", path);
-                            Console.WriteLine("No se pudo descargar acta luego de 5 intentos.");
-                            success = true;
-                        }
-                    }
-                }
+                Console.WriteLine($"✓ Downloaded {saveFile}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ Error downloading {saveFile}: {ex.Message}");
+            }
+            finally
+            {
+                await page.CloseAsync();
+                await context.CloseAsync();
             }
         }
+
+
+
         private static void ErrorLog(string mensaje, string path)
         {
             error_root = string.IsNullOrEmpty(error_root) ? Guid.NewGuid().ToString() : error_root;
