@@ -24,8 +24,12 @@ Esta aplicación se encuentra en versión de pruebas. Si alguien quiere contribu
    ```bash
    dotnet build
    ```
+   
+   Nota: Este paso genera automáticamente el script `playwright.ps1` (o `playwright.sh` en Linux/macOS) en la carpeta `bin/Debug/net5.0`.
 
 4. **Instalar navegadores Playwright** (requerido para bypass de Cloudflare)
+   
+   Después de compilar, el script de Playwright estará disponible en la carpeta de salida:
    
    En Windows (PowerShell):
    ```powershell
@@ -38,6 +42,8 @@ Esta aplicación se encuentra en versión de pruebas. Si alguien quiere contribu
    cd PE_Scrapping/bin/Debug/net5.0
    ./playwright.sh install chromium
    ```
+   
+   **Importante:** Este paso solo se requiere una vez. El navegador Chromium se descarga en `%USERPROFILE%\AppData\Local\ms-playwright` (Windows) o `~/.cache/ms-playwright` (Linux/macOS).
 
 5. **Configurar appSettings.json** (opcional)
    
